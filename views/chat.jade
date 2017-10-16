@@ -1,0 +1,74 @@
+extends layoutChat
+
+block content
+    Script(src="js/client.js")    
+    div.topBar
+      div.username
+        a Вы зашли как 
+          a.name #{username}
+      a(href='/logout').logout Выйти
+    div.all
+      table.all 
+        tr
+          td
+            div.divChat
+              h1#me  ЧАТ
+              div.divChatBorder
+                div.chatWindow#messageHistory
+                div.my-flex-input
+                  div(contenteditable="true", aria-multiline="true")#textMessage.inputMessage
+                  div.div-file
+                    input(type='file',accept=".jpg, .jpeg, .png, .zip" onchange='uploadFile()')#myfile  
+          td         
+            div.rooms              
+               select(size=10 onchange='loadConversation()')#sel
+                 optgroup(label="Диалоги")#selopt
+                    -for name in room
+                      option(value="#{name.id}") #{name.name}
+                div#divAdd      
+                  select(size=10 multiple="multiple")#sel2
+                  input(type="button" value="создать" onclick='addConversation()')#add
+
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          

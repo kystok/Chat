@@ -1,0 +1,173 @@
+#sel2{
+    width: 100%;
+}
+
+#add{
+    width: 100%
+}
+
+#divAdd{
+    width: 150px;
+}
+
+.rooms{
+    display: flex;
+}
+.logout {
+    color: hsla(246, 100%, 66%, 1);
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+}
+
+.my-flex-input {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+.body {
+    margin-top: 0;
+    min-height: 400px;
+    font: 12px "Lucida Grande", Helvetica, Arial;
+}
+
+.dateLine {
+    text-align: center;
+    color: hsla(249, 36%, 56%, 0.86);
+}
+
+#myfile {
+    opacity: 0;
+
+    cursor: pointer;
+    border: none;
+    width: 100%;
+    height: 100%;
+}
+
+
+#sel {
+    width: 200px;
+}
+
+.topBar {
+    position: relative;
+
+    margin-left: 20%;
+    margin-right: 20%;
+    height: 50px;
+    border-radius: 0 0 6px 6px;
+    background: hsla(0, 0%, 72%, 0.96);
+}
+
+.divChat {
+    width: 383px;
+    height: 400px;
+    padding: 10px;
+}
+
+.timeMessage {
+    font-size: 12px;
+    padding: 8px;
+
+    color: hsla(219.2, 96%, 48.4%, 0.6);
+}
+
+.divChatBorder {
+    border: 1px solid #000000;
+    border-radius: 4px;
+}
+
+.url {
+    text-align: right;
+}
+
+.imgMessage {
+    width: 200px;
+}
+
+.fromMessage {
+    color: blue;
+    font-weight: bolder;
+}
+
+.dataMessage {
+    word-wrap: break-word;
+}
+
+.newMessage {
+    padding: 15px;
+    color: #000000;
+}
+
+.myMessage {
+    padding: 15px;
+    color: #000000;
+}
+
+.chatWindow {
+    overflow: auto;
+    height: 400px;
+    background: #F5F9D8;
+    border-radius: 8px;
+}
+
+.forma {
+    border-radius: 5px;
+    position: absolute;
+    width: 250px;
+    left: 50%;
+    top: 50%;
+    margin-left: -150px;
+    margin-top: -100px;
+    border: solid 1px black;
+    padding: 10px;
+}
+
+.room {
+    display: block;
+}
+
+#textMessage {
+    cursor: text;
+    outline: 10px;
+    border: 1px solid hsla(218.8, 20.5%, 83.7%, 0.6);
+    min-height: 20px;
+    max-height: 50px;
+    word-wrap: break-word;
+    overflow-y: auto;
+    padding: 9px 15px 10px 11px;
+    width: 90%;
+}
+
+
+.div-file {
+    overflow: hidden;
+    width: 10%;
+    cursor: pointer;
+    background: url(/icons/icons8-Меню-50.png) no-repeat;
+    background-size: 20px 20px;
+    background-position: center;
+}
+
+.center{
+    width: 15px;
+    height: 15px;
+    background: url(/icons/delete.png) no-repeat;
+    background-size: 15px;
+    background-position: center;
+}
+
+.controls{
+    width: 5%;
+}
+
+.mes-block{
+    display: block;
+    width: 95%;
+}
+
+.mes-flex{
+    display: flex;
+}

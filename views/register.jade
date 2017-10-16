@@ -1,0 +1,32 @@
+extends layout
+
+block content
+  body
+      Script(src="/js/socket.io.js")
+      Script(src="/js/register.js")
+      h1 Create new account
+      div#login-form.forma
+          table
+              tr
+                th(colspan='2') Register your account 
+              tr 
+                td(colspan='2')
+                  label First name
+                  input(name='firstname' placeholder='Your name')
+              tr 
+                td(colspan='2')
+                  label Last name
+                  input(name='lastname' placeholder='Your last name')
+              tr
+                td(colspan='2')
+                  label(for='login') Login
+                  input(name='login' placeholder='Your Login')
+              tr  
+                td(colspan='2')
+                  label(for='password') Password 
+                  input(type='password' name='password' placeholder='Your Password')
+              tr  
+                td
+                  button(onclick='reg()') Register
+                td.url
+                  a(href='/') Login
