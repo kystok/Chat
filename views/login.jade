@@ -1,0 +1,28 @@
+extends layout
+
+block content
+  body
+    Script(src="/js/socket.io.js")
+    Script(src="/js/login.js")
+    div#login-form.forma
+        table
+          tr
+            th(colspan='2') Login to your account
+          tr
+            td
+              label Username
+          tr    
+            td(colspan='2')  
+              input(type='text' name='username' placeholder='Your Email')
+          tr
+            td(colspan='2') 
+              label(for='password') Password
+          tr
+            td(colspan='2')     
+              input(type='password' name='password' placeholder='Your Password')
+          tr
+            td
+              button(onclick='login()') Login  
+            td.url
+              a(href='register') or Register
+    
