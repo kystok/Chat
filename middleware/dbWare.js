@@ -16,9 +16,13 @@ function query(sql, params, callback) {
     pool.getConnection(function(error, connection) {
         connection.query(sql, params, function(err, rows) {
             connection.release();
-            callback({ err, rows });
+            callback({ error, rows });
         })
     })
+}
+
+function loger(error) {
+    console.log(error);
 }
 
 
@@ -50,7 +54,8 @@ function addMessage(sendFrom, id_room, text) {
     return new Promise(function(resolve, reject) {
         var sql = "CALL `addMessages` (?,?,?)";
         query(sql, [sendFrom, id_room, text], function(callback) {
-            resolve(callback.rows[0]);
+            if (callback.rows) resolve(callback.rows[0]);
+            if (callback.error) loger(error);
         })
     });
 };
@@ -60,7 +65,8 @@ function addImage(room, sendFrom, path) {
     return new Promise(function(resolve, reject) {
         var sql = "CALL `addImage` (?,?,?)"
         query(sql, [room, path, sendFrom], function(callback) {
-            resolve(callback.rows[0]);
+            if (callback.rows) resolve(callback.rows[0]);
+            if (callback.error) loger(error);
         })
     });
 };
@@ -69,7 +75,8 @@ function loadRoom(login) {
     return new Promise(function(resolve, reject) {
         var sql = 'CALL `showRoom`(?);';
         query(sql, login, function(callback) {
-            resolve(callback.rows[0]);
+            if (callback.rows) resolve(callback.rows[0]);
+            if (callback.error) loger(error);
         });
     });
 };
@@ -78,17 +85,19 @@ function loadUsers(user) {
     return new Promise(function(resolve, reject) {
         var sql = 'SELECT `login` FROM `users` WHERE `login` != ?';
         query(sql, user, function(callback) {
-            resolve(callback.rows[0]);
+            if (callback.rows) resolve(callback.rows[0]);
+            if (callback.error) loger(error);
         });
     });
 };
 
 
-function loadMessage(room) {
+function loadMessage(room, limit) {
     return new Promise(function(resolve, reject) {
-        var sql = "CALL `loadMessage` (?)";
-        query(sql, room, function(callback) {
-            resolve(callback.rows[0]);
+        var sql = "CALL `loadMessage` (?,?)";
+        query(sql, [room, limit], function(callback) {
+            if (callback.rows) resolve(callback.rows[0]);
+            if (callback.error) loger(error);
         });
     });
 };
@@ -98,7 +107,8 @@ function register(login, pass, fn, ln) {
     return new Promise(function(resolve, reject) {
         var sql = 'SELECT `addUser`(?,?,?,?) AS `result`;';
         query(sql, [login, hash(login, pass), fn, ln], function(callback) {
-            resolve(callback.rows[0]);
+            if (callback.rows) resolve(callback.rows[0]);
+            if (callback.error) loger(error);
         });
     });
 };
@@ -107,7 +117,8 @@ function addFile(room, sendFrom, path, name) {
     return new Promise(function(resolve, reject) {
         var sql = "CALL `addFile` (?,?,?,?)"
         query(sql, [room, path, sendFrom, name], function(callback) {
-            resolve(callback.rows[0]);
+            if (callback.rows) resolve(callback.rows[0]);
+            if (callback.error) loger(error);
         });
     })
 }
@@ -117,16 +128,17 @@ function getUsers(userName) {
     return new Promise(function(resolve, reject) {
         var sql = 'CALL `getUsers`(?)';
         query(sql, [userName], function(callback) {
-            resolve(callback.rows[0]);
+            if (callback.rows) resolve(callback.rows[0]);
+            if (callback.error) loger(error);
         });
     });
 }
 
 function addConversation(users, name) {
     return new Promise(function(resolve, reject) {
-        var sql = 'CALL `addConversation`(?,?)';
+        var sql = "CALL `addConversation` (?,?)";
         for (var i = 0; i < users.length; i++)
-            query(sql, [name, users[i]], function(callback) {});
+            query(sql, [name, users[i]], function(callback) { if (callback.error) loger(error); });
         resolve('Done');
     })
 }
@@ -135,7 +147,8 @@ function deleteMessage(id, room) {
     return new Promise(function(resolve, reject) {
         var sql = 'DELETE FROM `messages` WHERE `id`=? AND `id_room`=?';
         query(sql, [id, room], function(callback) {
-            resolve(callback.rows[0]);
+            if (callback.rows) resolve(callback.rows[0]);
+            if (callback.error) loger(error);
         });
     })
 }

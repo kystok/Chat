@@ -141,8 +141,7 @@ module.exports = function(server) {
 
         socket.on('changeRoom', function(data) {
             socket.join(data.room);
-
-            db.loadMessage(data.room)
+            db.loadMessage(data.room, data.limit)
                 .then(result => {
                     socket.emit('loadConversation', { rows: result });
                 });

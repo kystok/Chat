@@ -148,10 +148,10 @@ function getUsername() {
 function loadConversation() {
     $('#messageHistory').children().remove();
     var room = $('#sel').val();
-
+    var limit = 10;
     if (room) {
         //console.log(room)
-        socket.emit('changeRoom', { room: room });
+        socket.emit('changeRoom', { room: room, limit: limit});
     }
     if (room == null) {
         socket.emit('loadRoom', getUsername());
