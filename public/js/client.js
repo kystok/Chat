@@ -181,10 +181,12 @@ function uploadFile() {
                     path: response.path,
                     room: room,
                     sendFrom: getCookie("username")
-                }),
-                function(data_callback) {
-                    consol.log(data_callback)
-                }
+                },
+                function(data) {
+                    console.log(data);
+                    newMessageFile(data.username, data.path, "myMessage", timeMessage(data.date), data.text, data.id);
+
+                })
         }
     }
 
@@ -304,7 +306,7 @@ function newDateLine(date) {
 
 function newMessageImage(from, url, style, time, id) {
     var history = document.getElementById('messageHistory');
-    var div = newElemImage(from, url, style, time);
+    var div = newElemImage(from, url, style, time, id);
     history.appendChild(div);
 }
 

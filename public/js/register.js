@@ -5,10 +5,9 @@ function reg() {
     var lastName = $("input[name='lastname']").val();
     var login = $("input[name='login']").val();
     var pass = $("input[name='password']").val();
-    socket.emit('register', { login: login, pass: pass, lastName: lastName, firstName: firstName });
-    
-}
+    socket.emit('register', { login: login, pass: pass, lastName: lastName, firstName: firstName }, function(callback) {
+        if (callback.registration)
+            location.reload();
+    });
 
-socket.on('register', function(data) {
-    location.reload();
-})
+}

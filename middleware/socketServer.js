@@ -19,13 +19,13 @@ module.exports = function(server) {
     var form = new multiparty.Form();
     io.sockets.on('connection', function(socket) {
 
-        socket.on('login', function(data) {
+        socket.on('login', function(data, callback) {
 
             db.authorization(data.login, data.password)
                 .then(result => {
                     if (result) {
                         var uc = data.login + '.' + handshake(data.login);
-                        socket.emit('login', { usercookie: uc });
+                        callback({ usercookie: uc });
                     };
                     return log.f(result, data.login);
                 });
@@ -52,7 +52,7 @@ module.exports = function(server) {
                                 img_path: path,
                                 date: date
                             };
-                            console.log('bd',backData)
+                            console.log('bd', backData)
                             socket.emit('backImage', { sendFrom: name, img_path: path, date: new Date() });
                         }
                         if (message.length != 0)
@@ -82,11 +82,11 @@ module.exports = function(server) {
                         db.addMessage(name, room, message)
                             .then(result => {
                                 backData.message = {
-                                        sendFrom: name,
-                                        message: accessText(message),
-                                        date: result[0].date,
-                                        id: result[0].id_message
-                                    };
+                                    sendFrom: name,
+                                    message: accessText(message),
+                                    date: result[0].date,
+                                    id: result[0].id_message
+                                };
                                 callback(backData);
                             })
                             .catch(error => {
@@ -129,9 +129,11 @@ module.exports = function(server) {
             db.addFile(data.room, username, data.path.substring(data.path.indexOf("/")), data.name)
                 .then(result => {
                     var path = data.path.substring(data.path.indexOf("/"));
-                    var name = data.name
-                    callback(path);
-                })
+                    var text = data.name;
+                    var id = result[0].id;
+                    var date = result[0].date;
+                    callback({ path, text, username, id, date });
+                });
         });
 
 
@@ -146,14 +148,18 @@ module.exports = function(server) {
                 });
         });
 
-        socket.on('register', function(data) {
+        socket.on('register', function(data, callback) {
             db.register(data.login, data.pass, data.firstName, data.lastName)
                 .then(result => {
-                    socket.emit('register', {});
                     log.f(result, data.login);
-                    return reg.f(result, data.login);
+                    reg.f(result, data.login);
+                    var registration = true;
+                    callback({ registration, result });
+
                 })
                 .catch(error => {
+                    var registration = false;
+                    callback({ registration, error })
                     console.log("error promise registration: ", error);
                 })
         });
@@ -200,7 +206,7 @@ module.exports = function(server) {
                         .then(result => {
                             var id_mes = result[0].id_message;
                             var date = result[0].date;
-                            resolve({id_mes, date, pathh});
+                            resolve({ id_mes, date, pathh });
                         })
                 })
                 .catch((err) => {
