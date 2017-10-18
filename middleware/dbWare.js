@@ -16,13 +16,13 @@ function query(sql, params, callback) {
     pool.getConnection(function(error, connection) {
         connection.query(sql, params, function(err, rows) {
             connection.release();
-            callback({ error, rows });
+            callback({ err, rows });
         })
     })
 }
 
 function loger(error) {
-    console.log(error);
+
 }
 
 
@@ -32,13 +32,10 @@ function authorization(login, password) {
         query(sql, [login, hash(login, password)], function(callback) {
 
             var auth = false;
-            if (callback.err) { console.log('error in query: ', callback.err) };
+            if (callback.error) { reject(callback.error); };
             if (callback.rows[0].result == 1) {
                 auth = true;
-
-            } else {
-                console.log('не получилось войти ', callback.rows[0].result);
-            };
+            }
             resolve(auth);
         });
     });
@@ -55,7 +52,7 @@ function addMessage(sendFrom, id_room, text) {
         var sql = "CALL `addMessages` (?,?,?)";
         query(sql, [sendFrom, id_room, text], function(callback) {
             if (callback.rows) resolve(callback.rows[0]);
-            if (callback.error) loger(error);
+            if (callback.error) reject(callback.error);
         })
     });
 };
@@ -66,7 +63,7 @@ function addImage(room, sendFrom, path) {
         var sql = "CALL `addImage` (?,?,?)"
         query(sql, [room, path, sendFrom], function(callback) {
             if (callback.rows) resolve(callback.rows[0]);
-            if (callback.error) loger(error);
+            if (callback.error) reject(callback.error);
         })
     });
 };
@@ -76,7 +73,7 @@ function loadRoom(login) {
         var sql = 'CALL `showRoom`(?);';
         query(sql, login, function(callback) {
             if (callback.rows) resolve(callback.rows[0]);
-            if (callback.error) loger(error);
+            if (callback.error) reject(callback.error);
         });
     });
 };
@@ -86,7 +83,7 @@ function loadUsers(user) {
         var sql = 'SELECT `login` FROM `users` WHERE `login` != ?';
         query(sql, user, function(callback) {
             if (callback.rows) resolve(callback.rows[0]);
-            if (callback.error) loger(error);
+            if (callback.error) reject(callback.error);
         });
     });
 };
@@ -97,7 +94,7 @@ function loadMessage(room, limit) {
         var sql = "CALL `loadMessage` (?,?)";
         query(sql, [room, limit], function(callback) {
             if (callback.rows) resolve(callback.rows[0]);
-            if (callback.error) loger(error);
+            if (callback.error) reject(callback.error);
         });
     });
 };
@@ -108,7 +105,7 @@ function register(login, pass, fn, ln) {
         var sql = 'SELECT `addUser`(?,?,?,?) AS `result`;';
         query(sql, [login, hash(login, pass), fn, ln], function(callback) {
             if (callback.rows) resolve(callback.rows[0]);
-            if (callback.error) loger(error);
+            if (callback.error) reject(callback.error);
         });
     });
 };
@@ -118,7 +115,7 @@ function addFile(room, sendFrom, path, name) {
         var sql = "CALL `addFile` (?,?,?,?)"
         query(sql, [room, path, sendFrom, name], function(callback) {
             if (callback.rows) resolve(callback.rows[0]);
-            if (callback.error) loger(error);
+            if (callback.error) reject(callback.error);
         });
     })
 }
@@ -129,7 +126,7 @@ function getUsers(userName) {
         var sql = 'CALL `getUsers`(?)';
         query(sql, [userName], function(callback) {
             if (callback.rows) resolve(callback.rows[0]);
-            if (callback.error) loger(error);
+            if (callback.error) reject(callback.error);
         });
     });
 }
@@ -148,7 +145,7 @@ function deleteMessage(id, room) {
         var sql = 'DELETE FROM `messages` WHERE `id`=? AND `id_room`=?';
         query(sql, [id, room], function(callback) {
             if (callback.rows) resolve(callback.rows[0]);
-            if (callback.error) loger(error);
+            if (callback.error) reject(callback.error);
         });
     })
 }

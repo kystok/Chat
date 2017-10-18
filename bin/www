@@ -24,13 +24,11 @@ var ss = require('../middleware/socketServer')(server);
 require('../middleware/dbWare');
 
 
-function serv() {
-  return "123";
-}
-module.exports.serv = serv;
-server.listen(port);
+
+server.listen(port); 
 server.on('error', onError);
 server.on('listening', onListening);
+
 
 /**
  * Normalize a port into a number, string, or false.

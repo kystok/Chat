@@ -2,8 +2,7 @@ extends layout
 
 block content
   body
-    Script(src="/js/socket.io.js")
-    Script(src="/js/login.js")
+    Script(src="./js/login.js")
     div#login-form.forma
         table
           tr
@@ -24,5 +23,5 @@ block content
             td
               button(onclick='login()') Login  
             td.url
-              a(href='register') or Register
+              a(href='./register') or Register
     

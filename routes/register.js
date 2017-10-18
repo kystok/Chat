@@ -14,7 +14,7 @@ router.get('/', function(req, res, next) {
             req.session.username = username;
         }
         console.log(_auth);
-        res.redirect('/');
+        res.redirect('./');
         res.render('chat', { room: room, username: username});
     } else {
         res.clearCookie("auth");

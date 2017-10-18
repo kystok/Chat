@@ -1,12 +1,13 @@
 extends layoutChat
 
 block content
-    Script(src="js/client.js")    
+    Script(src="./js/sock.js")
+    Script(src="./js/client.js")    
     div.topBar
       div.username
         a Вы зашли как 
           a.name #{username}
-      a(href='/logout').logout Выйти
+      a(href='./logout').logout Выйти
     div.all
       table.all 
         tr
