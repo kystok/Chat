@@ -28,7 +28,10 @@ module.exports = function(server) {
                         callback({ usercookie: uc });
                     };
                     return log.f(result, data.login);
-                });
+                })
+                .catch(error => {
+                    loger(error);
+                })
         });
 
 
@@ -104,6 +107,9 @@ module.exports = function(server) {
                 .then(result => {
                     callback(result);
                 })
+                .catch(error => {
+                    loger(error);
+                })
         })
 
         socket.on('addConversation', function(data) {
@@ -114,12 +120,18 @@ module.exports = function(server) {
                             socket.emit('loadRoom', result);
                         });
                 })
+                .catch(error => {
+                    loger(error);
+                })
         })
 
         socket.on('users', function(username) {
             db.getUsers(username)
                 .then(result => {
                     socket.emit('users', { rows: result });
+                })
+                .catch(error => {
+                    loger(error);
                 })
         })
 
@@ -133,7 +145,11 @@ module.exports = function(server) {
                     var id = result[0].id;
                     var date = result[0].date;
                     callback({ path, text, username, id, date });
-                });
+                })
+                .catch(error => {
+                    loger(error);
+                })
+
         });
 
 
@@ -141,11 +157,14 @@ module.exports = function(server) {
 
         socket.on('changeRoom', function(data) {
             socket.join(data.room);
-
-            db.loadMessage(data.room)
+            db.loadMessage(data.room, data.limit)
                 .then(result => {
                     socket.emit('loadConversation', { rows: result });
+                })
+                .catch(error => {
+                    loger(error);
                 });
+
         });
 
         socket.on('register', function(data, callback) {
@@ -159,8 +178,8 @@ module.exports = function(server) {
                 })
                 .catch(error => {
                     var registration = false;
-                    callback({ registration, error })
-                    console.log("error promise registration: ", error);
+                    callback({ registration, error });
+                    loger(error);
                 })
         });
 
@@ -170,7 +189,7 @@ module.exports = function(server) {
                     socket.emit('loadRoom', result);
                 })
                 .catch(error => {
-                    console.log("error promise loadRoom: ", error);
+                    loger(error);
                 })
         });
 
@@ -210,8 +229,7 @@ module.exports = function(server) {
                         })
                 })
                 .catch((err) => {
-                    console.log('errDWNLD ', err);
-                    console.log('opt ', options);
+                    loger(err);
                     reject(null);
                 })
         })
@@ -243,8 +261,8 @@ module.exports = function(server) {
                             console.log('result in down: ', ret)
                             resolve(ret);
                         })
-                        .catch(err => {
-                            console.log('error in down: ', ret)
+                        .catch(error => {
+                            loger(error);
                             ret.message = message;
                             reject(ret);
                         });

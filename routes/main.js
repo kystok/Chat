@@ -19,6 +19,8 @@ module.exports = function(app) {
     app.use('/logout', logout);
 
 
+    
+
 
     app.post('/files', function(req, res, next) {
         // создаем форму

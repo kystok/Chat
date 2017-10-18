@@ -2,9 +2,7 @@ extends layout
 
 block content
   body
-      Script(src="/js/socket.io.js")
-      Script(src="/js/register.js")
-      h1 Create new account
+      Script(src="./js/register.js")
       div#login-form.forma
           table
               tr
@@ -29,4 +27,4 @@ block content
                 td
                   button(onclick='reg()') Register
                 td.url
-                  a(href='/') Login
+                  a(href='./') Login

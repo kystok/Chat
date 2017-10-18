@@ -146,7 +146,7 @@
     overflow: hidden;
     width: 10%;
     cursor: pointer;
-    background: url(/icons/icons8-Меню-50.png) no-repeat;
+    background: url(../icons/icons8-Меню-50.png) no-repeat;
     background-size: 20px 20px;
     background-position: center;
 }
@@ -154,7 +154,7 @@
 .center{
     width: 15px;
     height: 15px;
-    background: url(/icons/delete.png) no-repeat;
+    background: url(../icons/delete.png) no-repeat;
     background-size: 15px;
     background-position: center;
 }

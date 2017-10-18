@@ -1,5 +1,3 @@
-var socket = io.connect('http://localhost:3000');
-
 $(document).ready(function() {
     $('#textMessage').keypress(function(e) {
         if (e.keyCode == 13 && e.shiftKey == false) { sendMessage(); }
@@ -16,7 +14,6 @@ socket.on('message', function(data) {
     } else {
         newMessage(data.sendFrom, data.message, "newMessage", timeMessage(data.time), data.id_message);
     }
-    scrolling();
 });
 
 
@@ -46,15 +43,14 @@ socket.on('loadConversation', function(data) {
         time = rows[i].date;
         if (rows[i].file_path != null) {
             newMessageFile(rows[i].sendFrom, rows[i].file_path, "myMessage", timeMessage(rows[i].date), rows[i].text, rows[i].id);
-            scrolling();
             continue;
         } else {
             if (rows[i].img_path != null) {
                 image(rows[i]);
+
                 continue;
             } else {
                 newMessage(rows[i].sendFrom, rows[i].text, "myMessage", timeMessage(rows[i].date), rows[i].id);
-                scrolling();
             }
         }
 
@@ -148,10 +144,9 @@ function getUsername() {
 function loadConversation() {
     $('#messageHistory').children().remove();
     var room = $('#sel').val();
-
+    var limit = 10;
     if (room) {
-        //console.log(room)
-        socket.emit('changeRoom', { room: room });
+        socket.emit('changeRoom', { room: room, limit: limit});
     }
     if (room == null) {
         socket.emit('loadRoom', getUsername());
@@ -165,7 +160,7 @@ function uploadFile() {
     var data = new FormData();
     data.append('uploadFile', file.files[0]);
     var xhr = new XMLHttpRequest();
-    xhr.open("POST", "/files", true);
+    xhr.open("POST", "./files", true);
     xhr.send(data);
     xhr.onreadystatechange = function() {
         if (this.readyState != 4) return; //rediState = 4 => DONE.  Операция полностью завершена. так лишний проход убирается
@@ -183,9 +178,8 @@ function uploadFile() {
                     sendFrom: getCookie("username")
                 },
                 function(data) {
-                    console.log(data);
+                    console.log(data)
                     newMessageFile(data.username, data.path, "myMessage", timeMessage(data.date), data.text, data.id);
-
                 })
         }
     }
@@ -229,7 +223,6 @@ function normaMessage(text) {
 function message(message) {
     var room = $('#sel').val();
     socket.emit('message', { room: room, message: message, sendFrom: getCookie("username") }, function(data) {
-        console.log('1', data);
         if (data.image)
             image(data.image);
         if (data.message)
@@ -249,6 +242,7 @@ function newMessage(from, data, style, time, id) {
     var history = document.getElementById('messageHistory');
     var div = newElemMessage(from, data, style, time, id);
     history.appendChild(div);
+    scrolling();
 }
 
 function delete_mes() {
@@ -308,6 +302,7 @@ function newMessageImage(from, url, style, time, id) {
     var history = document.getElementById('messageHistory');
     var div = newElemImage(from, url, style, time, id);
     history.appendChild(div);
+    scrolling();
 }
 
 function newElemImage(from, url, style, time, id) {
@@ -355,6 +350,7 @@ function newMessageFile(sendFrom, file_path, style, date, text, id) {
     var history = document.getElementById('messageHistory');
     var div = newElemLink(sendFrom, file_path, style, date, text, id);
     history.appendChild(div);
+    scrolling();
 }
 
 
@@ -374,7 +370,7 @@ function newElemLink(sendFrom, file_path, style, date, text, id) {
 
 function newLink(link, text) {
     var a = document.createElement("a");
-    a.href = link;
+    a.href = '.' + link;
     a.innerHTML = text;
     return a;
 }

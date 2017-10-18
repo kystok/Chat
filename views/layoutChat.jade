@@ -2,9 +2,10 @@ doctype html
 html
   head
     title= title
-    link(rel='stylesheet', href='/stylesheets/style.css')
+    link(rel='stylesheet', href='./stylesheets/style.css')
     script(src="http://code.jquery.com/jquery-1.8.3.js")
-    Script(src="js/socket.io.js")
+    Script(src="./js/socket.io.js")
+    script(src="./js/sock.js")
 
   body(onload="loadConversation(); setFocus(); loadUsers()")
     block content 

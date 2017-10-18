@@ -8,7 +8,7 @@ router.get('/', function(req, res, next) {
     reg.f(false);
     res.clearCookie("auth");   
     res.clearCookie("username")
-    res.redirect('/');
+    res.redirect('./');
 });
 
 module.exports = router;
