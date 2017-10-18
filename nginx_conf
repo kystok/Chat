@@ -1,0 +1,36 @@
+
+
+
+
+//................
+
+location /chat {
+
+  if ($uri !~ "(\.html|\/)$") {
+      return    301    "$uri/";
+  }
+
+  }
+
+
+  location /chat/ {
+
+  proxy_pass http://localhost:3000/;
+
+  }
+
+  location /chat/local {
+  if ($uri !~ "(\.html|\/)$") {
+      return    301    "$uri/";
+  }
+
+  }
+
+  location /chat/local/ {
+
+  proxy_pass http://localhost:3000/;
+
+  }
+
+
+  //.................
