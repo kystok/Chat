@@ -14,27 +14,14 @@ var options = {
     user: config.db.sessions.user,
     password: config.db.sessions.password,
     database: config.db.sessions.database,
-    schema: {
-        tableName: 'sessions',
-        columnNames: {
-            session_id: 'session_id',
-            expires: 'expires',
-            data: 'data'
-        }
-    } 
 };      
-
-var intel = require('intel');
-intel.setLevel(intel.WARN);
-intel.warn('i made it!');
-intel.debug('nobody loves me');
 
 
 var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-app.use(logger('dev'));     //Логер запросов
+//app.use(logger('dev'));     //Логер запросов
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));

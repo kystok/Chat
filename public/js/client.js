@@ -9,11 +9,7 @@ $(document).ready(function() {
 
 
 socket.on('message', function(data) {
-    if (data.sendFrom == getUsername()) {
-        newMessage(data.sendFrom, data.message, "myMessage", timeMessage(data.time), data.id_message);
-    } else {
-        newMessage(data.sendFrom, data.message, "newMessage", timeMessage(data.time), data.id_message);
-    }
+    newMessage(data.message.sendFrom, data.message.message, "myMessage", timeMessage(data.message.date), data.message.id_message);
 });
 
 
@@ -47,7 +43,6 @@ socket.on('loadConversation', function(data) {
         } else {
             if (rows[i].img_path != null) {
                 image(rows[i]);
-
                 continue;
             } else {
                 newMessage(rows[i].sendFrom, rows[i].text, "myMessage", timeMessage(rows[i].date), rows[i].id);
@@ -146,7 +141,7 @@ function loadConversation() {
     var room = $('#sel').val();
     var limit = 10;
     if (room) {
-        socket.emit('changeRoom', { room: room, limit: limit});
+        socket.emit('changeRoom', { room: room, limit: limit });
     }
     if (room == null) {
         socket.emit('loadRoom', getUsername());
@@ -223,6 +218,7 @@ function normaMessage(text) {
 function message(message) {
     var room = $('#sel').val();
     socket.emit('message', { room: room, message: message, sendFrom: getCookie("username") }, function(data) {
+        console.log(data)
         if (data.image)
             image(data.image);
         if (data.message)

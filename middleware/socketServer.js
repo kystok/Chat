@@ -1,7 +1,8 @@
 var db = require('./dbWare');
 var access = require('../middleware/access');
 var render = require('../routes/render');
-const log = require('../routes/login');
+const login = require('../routes/login');
+const log = require('./logger');
 const reg = require('../routes/register');
 const config = require('../config');
 const sha512 = require('js-sha512');
@@ -17,21 +18,21 @@ module.exports = function(server) {
 
     var io = require('socket.io')(server);
     var form = new multiparty.Form();
-    io.sockets.on('connection', function(socket) {
 
+    io.on('connection', function(socket) {
         socket.on('login', function(data, callback) {
-
             db.authorization(data.login, data.password)
                 .then(result => {
                     if (result) {
+                        login.f(result, data.login);
+                        login.addRooms(db.loadRoom(data.login));
                         var uc = data.login + '.' + handshake(data.login);
-                        callback({ usercookie: uc });
+                        callback(data.login + '.' + handshake(data.login));
                     };
-                    return log.f(result, data.login);
                 })
                 .catch(error => {
-                    loger(error);
-                })
+                    log("INFO","Ошибка при авторизации",error);
+                });
         });
 
 
@@ -55,7 +56,6 @@ module.exports = function(server) {
                                 img_path: path,
                                 date: date
                             };
-                            console.log('bd', backData)
                             socket.emit('backImage', { sendFrom: name, img_path: path, date: new Date() });
                         }
                         if (message.length != 0)
@@ -74,11 +74,15 @@ module.exports = function(server) {
                                         id: result[0].id_message
                                     };
                                     callback(backData);
+                                    socket.broadcast.to(room).emit('message', backData);
                                 })
                                 .catch(error => {
-                                    console.log("error promise: ", error);
+                                    log("INFO","Ошибка при добавлении сообщения",error);
                                 })
-                        } else callback(backData);
+                        } else {
+                            callback(backData);
+                            socket.broadcast.to(room).emit('message', backData);
+                        }
                     })
                     .catch(err => {
                         message = normaMessage(err.message);
@@ -91,9 +95,10 @@ module.exports = function(server) {
                                     id: result[0].id_message
                                 };
                                 callback(backData);
+                                socket.broadcast.to(room).emit('message', backData);
                             })
                             .catch(error => {
-                                console.log("error promise: ", error);
+                                log("INFO","Ошибка при добавлении сообщения",error);
                             })
                     })
 
@@ -108,7 +113,7 @@ module.exports = function(server) {
                     callback(result);
                 })
                 .catch(error => {
-                    loger(error);
+                    log("INFO","Ошибка при удалении сообщения",error);
                 })
         })
 
@@ -121,17 +126,16 @@ module.exports = function(server) {
                         });
                 })
                 .catch(error => {
-                    loger(error);
+                    log("INFO","Ошибка при добавлении нового диалога в БД",[data.users, data.name, error]);
                 })
         })
 
-        socket.on('users', function(username) {
+        socket.on('users', function(username) {   //загрузка всех юзеров, в дальнейшем надо отключить
             db.getUsers(username)
                 .then(result => {
                     socket.emit('users', { rows: result });
                 })
                 .catch(error => {
-                    loger(error);
                 })
         })
 
@@ -147,7 +151,7 @@ module.exports = function(server) {
                     callback({ path, text, username, id, date });
                 })
                 .catch(error => {
-                    loger(error);
+                    log("INFO","Ошибка при добавлении файла в БД",error);
                 })
 
         });
@@ -162,7 +166,7 @@ module.exports = function(server) {
                     socket.emit('loadConversation', { rows: result });
                 })
                 .catch(error => {
-                    loger(error);
+                    log("INFO","Ошибка при загрузке сообщений",error);
                 });
 
         });
@@ -179,7 +183,7 @@ module.exports = function(server) {
                 .catch(error => {
                     var registration = false;
                     callback({ registration, error });
-                    loger(error);
+                    log("INFO", "Ошибка регистрации", error);
                 })
         });
 
@@ -189,7 +193,7 @@ module.exports = function(server) {
                     socket.emit('loadRoom', result);
                 })
                 .catch(error => {
-                    loger(error);
+                    log("INFO", "Ошибка при загрузке диалогов", error);
                 })
         });
 
@@ -217,7 +221,7 @@ module.exports = function(server) {
             var options = {
                 url: url,
                 dest: path.join(__dirname, "../public" + pathh)
-            }
+            };
 
             download.image(options)
                 .then(({ filename, image }) => {
@@ -226,10 +230,10 @@ module.exports = function(server) {
                             var id_mes = result[0].id_message;
                             var date = result[0].date;
                             resolve({ id_mes, date, pathh });
-                        })
+                        });
                 })
                 .catch((err) => {
-                    loger(err);
+                    log("INFO", "Ошибка при загрузке изображения", err);
                     reject(null);
                 })
         })
@@ -258,11 +262,9 @@ module.exports = function(server) {
                             ret.path = result.pathh;
                             ret.id = result.id_mes;
                             ret.date = result.date;
-                            console.log('result in down: ', ret)
                             resolve(ret);
                         })
                         .catch(error => {
-                            loger(error);
                             ret.message = message;
                             reject(ret);
                         });
@@ -288,17 +290,6 @@ module.exports = function(server) {
         else
             return false;
     }
-
-    /*function accessText(text) {
-
-        return text
-        //  хотя лучше оставить это, что бы проверка была на сервере, а не на клиенте..
-        //.replace(/[\u0000-\u9999<>\&]/gim, function(i) { //Из-за DIV вроде инпута не нужно экранировать, 
-        // див сам экранирует <> эти тэги
-        //console.log('&#' + i.charCodeAt(0) + ';')
-        //    return '&#' + i.charCodeAt(0) + ';';
-        //});
-    }*/
 
 
     function clear_nbsp(text) {

@@ -104,8 +104,6 @@ module.exports = function(app) {
         } catch (e) {
             console.log(e);
         }
-
-        //console.log(form)
     });
 
 
