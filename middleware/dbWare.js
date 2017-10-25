@@ -1,7 +1,7 @@
 const sha512 = require('js-sha512');
-const log = require('../routes/login');
 var mysql = require('mysql');
 const config = require('../config');
+const log = require('./logger');
 var options = {
     host: config.db.clients.host,
     port: config.db.clients.port,
@@ -13,39 +13,74 @@ var pool = mysql.createPool(options);
 
 
 function query(sql, params, callback) {
-    pool.getConnection(function(error, connection) {
-        connection.query(sql, params, function(err, rows) {
-            connection.release();
-            callback({ err, rows });
+    try {
+        pool.getConnection(function(error, connection) {
+            connection.query(sql, params, function(error, rows) {
+                connection.release();
+                callback({ error, rows });
+            })
         })
-    })
+    } catch (e) {
+        log("ERROR", "Ошибка подключении к бд", e);
+    }
 }
 
-function loger(error) {
-
-}
 
 
 function authorization(login, password) {
     return new Promise(function(resolve, reject) {
-        var sql = 'SELECT `authUsers`(?, ?) AS `result`;';
-        query(sql, [login, hash(login, password)], function(callback) {
+        if (login != "" || password != "") {
+            var sql = 'SELECT `authUsers`(?, ?) AS `result`;';
 
-            var auth = false;
-            if (callback.error) { reject(callback.error); };
-            if (callback.rows[0].result == 1) {
-                auth = true;
-            }
-            resolve(auth);
-        });
+            query(sql, [login, hash(login, password)], function(callback) {
+                var auth = false;
+                if (callback.error) {
+                    log("WARN", "авторизация", callback.error);
+                    reject(callback.error);
+                };
+                if (callback.rows)
+                    if (callback.rows[0].result == 1) {
+
+                        auth = true;
+                    };
+                if (callback.rows[0].result == 1) {
+                    auth = true;
+                };
+                resolve(auth);
+            });
+        } else {
+            resolve(false);
+        }
     });
-
-}
+};
 
 function hash(login, pass) {
     return hash_password = sha512(pass + sha512(login));
+};
+
+
+
+function addAccess(login, session) {
+    return new Promise(function(resolve, reject) {
+        var sql = "CALL `access_mod`(?, ?)";
+        query(sql, [login, session], function(callback) {
+            if (callback.error) { reject(callback.error); }
+            if (callback.rows) { resolve(callback.rows); }
+        })
+    })
 }
 
+
+
+function access(session) {
+    return new Promise(function(resolve, reject) {
+        var sql = "SELECT `user` FROM `access` WHERE `session` = ? order by id DESC limit 1"
+        query(sql, session, function(callback) {
+            if (callback.error) { reject(callback.error); }
+            if (callback.rows) { resolve(callback.rows); }
+        })
+    })
+}
 
 function addMessage(sendFrom, id_room, text) {
     return new Promise(function(resolve, reject) {
@@ -135,7 +170,9 @@ function addConversation(users, name) {
     return new Promise(function(resolve, reject) {
         var sql = "CALL `addConversation` (?,?)";
         for (var i = 0; i < users.length; i++)
-            query(sql, [name, users[i]], function(callback) { if (callback.error) loger(error); });
+            query(sql, [name, users[i]], function(callback) {
+                if (callback.error) reject(callback.error);
+            });
         resolve('Done');
     })
 }
@@ -157,6 +194,8 @@ module.exports = {
     loadMessage: loadMessage,
     register: register,
     addFile: addFile,
+    access: access,
+    addAccess: addAccess,
     addImage: addImage,
     getUsers: getUsers,
     deleteMessage: deleteMessage,

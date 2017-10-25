@@ -1,24 +1,46 @@
 var express = require('express');
 var router = express.Router();
-var access = require('../middleware/access');
+const log = require('../middleware/logger');
 var _auth = false;
+var db = require('../middleware/dbWare');
 var username;
-var room=[];
+var room = [];
+var sessions = [];
 
-/* GET home page. */
+
 router.get('/', function(req, res, next) {
     if (_auth) {
+        if (username)
+            db.addAccess(username, req.session.id)
+            .then(result => {
+                res.render('chat', { room: room, username: username });
+                _auth = false;
+            })
+            .catch(error => { _auth = false; })
+            else
+            {
+                _auth = false;
+                res.render('login');
+            }
 
-        if (req.cookies.auth != null || req.cookies.auth != undefined) {} else {
-            var cookie = req.session.id;
-            req.session.username = username;
-        }
-        res.render('chat',{room: room, username: username});
     } else {
-        res.clearCookie("auth");
-        res.render('login');
+        db.access(req.session.id)
+            .then(result => {
+                if (result[0].user) {
+                    req.session.username = result[0].user;
+                    res.render('chat', { room: room, username: result[0].user });
+                } else {
+                    _auth = false;
+                    res.render('login');
+                }
+            })
+            .catch(error => {
+                _auth = false;
+                res.render('login');
+            });
     }
 });
+
 
 function addRooms(r) {
     room = r;
@@ -27,8 +49,11 @@ function addRooms(r) {
 
 function f(_a, user) {
     _auth = _a;
-    username = user;
+    if (_a) {
+        username = user;
+    }
 }
+
 
 
 module.exports.f = f
