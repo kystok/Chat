@@ -1,26 +1,26 @@
 {
-    "db":
-    {
-        "clients":
-        {
-            "name": "mysql",
-            "host": "localhost",
-            "port": "3306",
-            "user": "chat",
-            "password": "chatbase",
-            "database": "test" 
-        },
-        "sessions":
-        {
-            "name": "mysql",
-            "host": "localhost",
-            "port": "3306",
-            "user": "sessions",
-            "password": "chatbase",
-            "database": "test"
-        }
-
+  "db": {
+    "clients": {
+      "name": "mysql",
+      "host": "localhost",
+      "port": "3306",
+      "user": "chat",
+      "password": "chatbase",
+      "database": "test"
     },
-    "secret": "0GBlJZ9EKBt2Zbi2flRPvztczCewBxXK"
-
+    "sessions": {
+      "name": "mysql",
+      "host": "localhost",
+      "port": "3306",
+      "user": "sessions",
+      "password": "chatbase",
+      "database": "test"
+    }
+  },
+  "secret": "0GBlJZ9EKBt2Zbi2flRPvztczCewBxXK",
+  "server": {
+    "global": "localhost",
+    "local": "localhost",
+    "port":"3000"
+  }
 }

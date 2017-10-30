@@ -1,6 +1,8 @@
-$(document).ready(function() {
-    $('#textMessage').keypress(function(e) {
-        if (e.keyCode == 13 && e.shiftKey == false) { sendMessage(); }
+$(document).ready(function () {
+    $('#textMessage').keypress(function (e) {
+        if (e.keyCode == 13 && e.shiftKey == false) {
+            sendMessage();
+        }
         if (e.keyCode == 160) {
             e.keyCode = 32;
         }
@@ -8,9 +10,23 @@ $(document).ready(function() {
 });
 
 
-socket.on('message', function(data) {
-    newMessage(data.message.sendFrom, data.message.message, "myMessage", timeMessage(data.message.date), data.message.id_message);
+socket.on('NEW', function (data) {
+    if (data.image)
+        image(data.image);
+    if (data.message)
+        newMessage(data.message.sendFrom, data.message.message, "myMessage", timeMessage(data.message.date), data.message.id);
+    if (data.file)
+        newMessageFile(data.file.sendFrom, data.file.path, "myMessage", timeMessage(data.file.date), data.file.text, data.file.id);
 });
+
+socket.on('delete', function (argument) {
+    var id = argument.id;
+    try {
+        document.getElementById(id).remove();
+    } catch (e) {
+        console.log(e);
+    }
+})
 
 
 function image(data) {
@@ -18,7 +34,7 @@ function image(data) {
 }
 
 
-socket.on('users', function(data) {
+socket.on('users', function (data) {
     var rows = data.rows;
     var sel2 = document.getElementById('sel2');
     for (var i = 0; i < rows.length; i++) {
@@ -30,7 +46,7 @@ socket.on('users', function(data) {
 })
 
 
-socket.on('loadConversation', function(data) {
+function createHistory(data) {
     var rows = data.rows;
     var name = getUsername();
     var time = new Date(0);
@@ -48,24 +64,17 @@ socket.on('loadConversation', function(data) {
                 newMessage(rows[i].sendFrom, rows[i].text, "myMessage", timeMessage(rows[i].date), rows[i].id);
             }
         }
-
-
     }
-
-});
-
-
-socket.on('loadRoom', function(result) {
-    $('#selopt').children().remove();
-    for (var i = 0; i < result.length; i++) {
-        $('#selopt').append($('<option>', { value: result[i].id, text: result[i].name }))
-    }
-});
+}
 
 
 function deleteMessage(id_message, id_room) {
-    return socket.emit('deleteMessage', { id_message: id_message, id_room: id_room }, function(result) {
-        if (result == "Done") { return true; } else { return false; }
+    return socket.emit('deleteMessage', {id_message: id_message, id_room: id_room, sendFrom: getUsername()}, function (result) {
+        if (result == "Done") {
+            return true;
+        } else {
+            return false;
+        }
     });
 
 }
@@ -101,22 +110,68 @@ function dayCheck(oldTime, newTime) {
 
 function addConversation() {
     var users = $('#sel2').val();
-    users.push(getUsername());
+    users.push(getUsername().substring(0, getUsername().indexOf(".")));
     var name = "";
-    if (users.length == null) { return null; }
+    if (users.length == null) {
+        return null;
+    }
     name = prompt("Введите название беседы");
     if (name == "") {
         name = users.join(', ');
     }
-    socket.emit('addConversation', { users: users, name: name, sendFrom: getUsername() });
-
+    var from = getUsername();
+    _addConversation(users, name, from, function (result) {
+        if (result)
+            loadRoom(result);
+    })
 }
+
+function _addConversation(users, name, sendFrom, callback) {
+    socket.emit('addConversation', {users: users, name: name, sendFrom: sendFrom}, function (data) {
+        callback(data);
+    });
+}
+
+function showRoom() {
+    socket.emit('loadRoom', getUsername(), function (result) {
+        if (result)
+            loadRoom(result);
+    });
+}
+
+function loadRoom(result) {
+    $('#selopt').children().remove();
+    for (var i = 0; i < result.length; i++) {
+        $('#selopt').append($('<option>', {value: result[i].id, text: result[i].name}))
+    }
+}
+
+
+function loadConversation() {
+    $('#messageHistory').children().remove();
+    var room = $('#sel').val();
+    var limit = 10;
+    if (room) {
+        loadMessages(room, limit, function (data) {
+            if (data)
+                createHistory(data);
+        })
+    }
+    if (room == null) {
+        showRoom();
+    }
+}
+
+function loadMessages(room, limit, callback) {
+    socket.emit('changeRoom', {room: room, limit: limit}, function (result) {
+        callback(result);
+    });
+}
+
 
 function loadUsers() {
-    var name = getUsername();
-    socket.emit('users', name);
+    socket.emit('users', getUsername());
 }
-
 
 
 function getCookie(name) {
@@ -132,20 +187,7 @@ function scrolling() {
 }
 
 function getUsername() {
-    var c = getCookie("username");
-    return c.substring(0, c.indexOf("."));
-}
-
-function loadConversation() {
-    $('#messageHistory').children().remove();
-    var room = $('#sel').val();
-    var limit = 10;
-    if (room) {
-        socket.emit('changeRoom', { room: room, limit: limit });
-    }
-    if (room == null) {
-        socket.emit('loadRoom', getUsername());
-    }
+    return getCookie("username");
 }
 
 
@@ -157,7 +199,7 @@ function uploadFile() {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "./files", true);
     xhr.send(data);
-    xhr.onreadystatechange = function() {
+    xhr.onreadystatechange = function () {
         if (this.readyState != 4) return; //rediState = 4 => DONE.  Операция полностью завершена. так лишний проход убирается
         if (this.status != 200) {
             // обработать ошибку
@@ -170,17 +212,15 @@ function uploadFile() {
                     name: response.name,
                     path: response.path,
                     room: room,
-                    sendFrom: getCookie("username")
+                    sendFrom: getUsername()
                 },
-                function(data) {
-                    console.log(data)
+                function (data) {
                     newMessageFile(data.username, data.path, "myMessage", timeMessage(data.date), data.text, data.id);
                 })
         }
     }
 
 }
-
 
 
 function timeMessage(time) {
@@ -193,38 +233,31 @@ function timeMessage(time) {
 function sendMessage() {
     if ($('#textMessage').text()) {
         if ($('#sel').val()) {
-            message($('#textMessage').text());
+            message($('#textMessage').text(), $('#sel').val(), getUsername(), function (data) {
+                if (data.result)
+                    backMessage(data.backData)
+                else alert(data.info)
+            });
             $('#textMessage').html('');
-        } else { alert('Диалог не выбран'); }
+        } else {
+            alert('Диалог не выбран');
+        }
     }
-    scrolling();
-}
-
-
-
-function normaMessage(text) {
-    var result = text;
-    var col = true;
-    while (col) {
-        result = result.replace(/\u0020+/, " ");
-        result = result.replace(/\u0009+/, " ");
-        result = result.replace(/\u000A+/m, '\n');
-        if (result.match(/(&nbsp;){1,}/m) == null && result.match(/(<br>){1,}/m) == null) { col = false; }
-    }
-    return result;
 }
 
 //отправляем данные серверу
-function message(message) {
-    var room = $('#sel').val();
-    socket.emit('message', { room: room, message: message, sendFrom: getCookie("username") }, function(data) {
-        console.log(data)
-        if (data.image)
-            image(data.image);
-        if (data.message)
-            newMessage(data.message.sendFrom, data.message.message, "myMessage", timeMessage(data.message.date), data.message.id_message);
+function message(message, room, sendFrom, callback) {
+    socket.emit('message', {room, message, sendFrom}, function (data) {
+        callback(data);
     });
-    scrolling();
+}
+
+function backMessage(data) {
+    if (data.image)
+        image(data.image);
+    if (data.message)
+        newMessage(data.message.sendFrom, data.message.message, "myMessage", timeMessage(data.message.date), data.message.id_message);
+
 }
 
 function TimeZoneAlignment(time) {
@@ -260,7 +293,6 @@ function newElemMessage(from, data, style, time, id) {
 }
 
 
-
 function newElemData(data) {
     var divData = document.createElement('div');
     divData.innerHTML = data;
@@ -292,7 +324,7 @@ function newDateLine(date) {
     history.appendChild(div);
 }
 
-//--------------------------------------------------------------
+//------------------------------IMAGE--------------------------------
 
 function newMessageImage(from, url, style, time, id) {
     var history = document.getElementById('messageHistory');
@@ -341,7 +373,7 @@ function newImg(url) {
 }
 
 
-//--------------------------------------------------------------
+//--------------------------FILE------------------------------------
 function newMessageFile(sendFrom, file_path, style, date, text, id) {
     var history = document.getElementById('messageHistory');
     var div = newElemLink(sendFrom, file_path, style, date, text, id);
@@ -360,8 +392,6 @@ function newElemLink(sendFrom, file_path, style, date, text, id) {
     div.appendChild(div_all);
     return div;
 }
-
-
 
 
 function newLink(link, text) {

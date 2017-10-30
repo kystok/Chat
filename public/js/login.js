@@ -1,9 +1,18 @@
-//var socket = io.connect('http://localhost:3000');
-
 function login() {
-    socket.emit('login', { login: $("input[name='username']").val(), password: $("input[name='password']").val()},
-        function(callback) {
-            document.cookie = `username = ${callback}`;
+    var login = $("input[name='username']").val();
+    var password = $("input[name='password']").val();
+    _login(login, password, function (data) {
+        if (data.result) {
+            document.cookie = `username = ${data.name}`;
             location.reload();
+        }
+        else alert('Ошибка входа')
+    })
+}
+
+function _login(login, password, callback) {
+    socket.emit('login', {login, password},
+        function (data) {
+            callback(data);
         });
 }

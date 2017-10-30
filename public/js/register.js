@@ -1,13 +1,20 @@
-//var socket = io.connect('http://localhost:3000');
-
 function reg() {
     var firstName = $("input[name='firstname']").val();
     var lastName = $("input[name='lastname']").val();
     var login = $("input[name='login']").val();
     var pass = $("input[name='password']").val();
-    socket.emit('register', { login: login, pass: pass, lastName: lastName, firstName: firstName }, function(callback) {
-        if (callback.registration)
+    _reg(firstName, lastName, login, pass, function (data) {
+        if (data.registration) {
+            document.cookie = `username = ${data.username}`;
             location.reload();
-    });
+        }
 
+    });
+}
+
+function _reg(firstName, lastName, login, pass, callback) {
+    socket.emit('register', {login: login, pass: pass, lastName: lastName, firstName: firstName},
+        function (data) {
+        callback(data);
+    });
 }

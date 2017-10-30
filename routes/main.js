@@ -1,4 +1,8 @@
-module.exports = function(app) {
+var path = require('path');
+const logger = require('../middleware/logger').logger(path.basename(__filename)),
+    log = require('../middleware/logger').log;
+
+module.exports = function (app) {
 
     var login = require('./login').router,
         register = require('./register').router,
@@ -11,24 +15,18 @@ module.exports = function(app) {
         fs = require("fs");
 
 
-
-
-
     app.use('/', login);
     app.use('/register', register);
     app.use('/logout', logout);
 
 
-    
-
-
-    app.post('/files', function(req, res, next) {
+    app.post('/files', function (req, res, next) {
         // создаем форму
         var form = new multiparty.Form();
         //console.log(form);
 
         //здесь будет храниться путь с загружаемому файлу, его тип и размер
-        var uploadFile = { uploadPath: '', type: '', size: 0 };
+        var uploadFile = {uploadPath: '', type: '', size: 0};
         //максимальный размер файла
         var maxSize = 100 * 1024 * 1024; //2MB
         //поддерживаемые типы(в данном случае это картинки формата jpeg,jpg и png)
@@ -44,31 +42,31 @@ module.exports = function(app) {
         var errors = [];
 
         //если произошла ошибка
-        form.on('error', function(err) {
+        form.on('error', function (err) {
             if (fs.existsSync(uploadFile.path)) {
                 //если загружаемый файл существует удаляем его
                 fs.unlinkSync(uploadFile.path);
-                console.log('error');
+                log('INFO', "ошибка в загрузке файла", err);
             }
         });
 
-        form.on('close', function() {
+        form.on('close', function () {
             //если нет ошибок и все хорошо
             if (errors.length == 0) {
                 //сообщаем что все хорошо
-                res.send({ status: 'ok', text: 'Success', name: name, path: path});
+                res.send({status: 'ok', text: 'Success', name: name, path: path});
             } else {
                 if (fs.existsSync(uploadFile.path)) {
                     //если загружаемый файл существует удаляем его
                     fs.unlinkSync(uploadFile.path);
                 }
                 //сообщаем что все плохо и какие произошли ошибки
-                res.send({ status: 'bad', errors: errors });
+                res.send({status: 'bad', errors: errors});
             }
         });
 
         // при поступление файла
-        form.on('part', function(part) {
+        form.on('part', function (part) {
             //читаем его размер в байтах
             uploadFile.size = part.byteCount;
             //читаем его тип
@@ -91,7 +89,7 @@ module.exports = function(app) {
                 part.pipe(out);
                 //res.send({ status: 'Done', text: 'file uploaded successfully' });
             } else {
-                console.log(errors);
+                log("INFO", "присутсвуют ошибки при загрузке фала", errors);
                 //пропускаем
                 //вообще здесь нужно как-то остановить загрузку и перейти к onclose
                 part.resume();
@@ -102,11 +100,9 @@ module.exports = function(app) {
         try {
             form.parse(req);
         } catch (e) {
-            console.log(e);
+            log("WARN", "ошибка при парсинге формы", {error: e, request: req});
         }
     });
-
-
 
 
 }
