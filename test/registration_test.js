@@ -57,7 +57,7 @@ QUnit.test("Registration", function (assert) {
     var r = simbol_global;
     fn = ln = lg = ps = r;
     _reg(fn, ln, lg, ps, function (callback) {
-        assert.equal(callback.registration, true, "Спец.символы засщитаны. -- " + r + " -- Регистрация произведена");
+        assert.equal(callback.registration, true, "Спец.символы засщитаны. -- " + r + " -- Регистрация произведена. info:"+callback.info);
         done();
     });
 });

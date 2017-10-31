@@ -1,22 +1,33 @@
 var app = require('../app');
 var debug = require('debug')('www2:server');
-var http = require('http');
+const https = require('https');
+const http = require('http');
+const fs = require('fs');
 var path = require('path');
 const logger = require('../middleware/logger').logger(path.basename(__filename));
 const log = require('../middleware/logger').log;
 const host = require('../config.json').server;
 
 var port = normalizePort(process.env.PORT || host.port);
+var SSLport = normalizePort(host.SSLport);
 
-var server = app.listen(port);
-var ss = require('../middleware/socketServer')(server);
+const options = {
+  key: fs.readFileSync('./privkey.pem'),
+  cert: fs.readFileSync('./fullchain.pem')
+};
+
+var httpServer = app.listen(port);
+httpServer.listen(port);
+require('../middleware/socketServer')(httpServer);
+
+
+var SSLserver = https.createServer(options,app);
+SSLserver.listen(SSLport);
+require('../middleware/socketServer')(SSLserver);
+
+
+
 require('../middleware/dbWare');
-
-
-
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
 
 
 function normalizePort(val) {

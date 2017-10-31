@@ -52,8 +52,12 @@ function log(type, text, info) {
     var log_path = logDir + t.getFullYear() + '_' + t.getMonth() + '_' + t.getDate() + '.log';
 
     if (type) {
-        writeLog(res, log_path);
-        writeLog(res, json_path);
+	console.log("------------");
+	console.log(res);
+	console.log("------------");
+
+       // writeLog(res, log_path);
+       // writeLog(res, json_path);
     }
 
 

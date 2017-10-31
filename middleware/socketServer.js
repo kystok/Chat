@@ -14,7 +14,7 @@ const login = require('../routes/login'),
 
 module.exports = function (server) {
 
-    var io = require('socket.io')(server),
+    var io = require('socket.io').listen(server),
         form = new multiparty.Form();
 
     io.on('connection', function (socket) {
