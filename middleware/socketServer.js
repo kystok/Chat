@@ -11,7 +11,6 @@ const login = require('../routes/login'),
     sha512 = require('js-sha512'),
     download = require('image-downloader');
 
-
 module.exports = function (httpServer, SSLserver) {
     var io = require('socket.io').listen(httpServer).listen(SSLserver),
         form = new multiparty.Form();
@@ -19,34 +18,34 @@ module.exports = function (httpServer, SSLserver) {
     io.on('connection', function (socket) {
 
         socket.on('login', function (data, callback) {
-            _login(data, function (data2) {
-                callback(data2);
-            })
+            _login(data, function (confirm) {
+                callback(confirm);
+            });
         });
 
         socket.on('register', function (data, callback) {
-            _register(data, function (data2) {
-                callback(data2);
-            })
+            _register(data, function (confirm) {
+                callback(confirm);
+            });
         });
 
         socket.on('message', function (data, callback) {
-            _message(data, function (data2) {
-                if (data2.result) socket.broadcast.to(data.room).emit('NEW', data2.backData);
-                callback(data2);
-            })
+            _message(data, function (message) {
+                if (message.result) socket.broadcast.to(data.room).emit('NEW', message.backData);
+                callback(message);
+            };
         });
 
         socket.on('deleteMessage', function (data, callback) {
-            _deleteMessage(data, function (data2) {
-                callback(data2);
-            })
+            _deleteMessage(data, function (result) {
+                callback(result);
+            });
         });
 
         socket.on('addConversation', function (data, callback) {
-            _addConversation(data, function (data2) {
-                callback(data2);
-            })
+            _addConversation(data, function (result) {
+                callback(result);
+            });
         });
 
         socket.on('users', function (username) { //загрузка всех юзеров, в дальнейшем надо отключить
@@ -56,8 +55,8 @@ module.exports = function (httpServer, SSLserver) {
                 })
                 .catch(error => {
                     log("WARN", "Ошибка при загрузке юзеров", error)
-                })
-        })
+                });
+        });
 
         socket.on('uploadFile', function (data, callback) {
             var username = checkUser(data.sendFrom);
@@ -74,7 +73,7 @@ module.exports = function (httpServer, SSLserver) {
                 })
                 .catch(error => {
                     log("INFO", "Ошибка при добавлении файла в БД", error);
-                })
+                });
         });
 
         socket.on('changeRoom', function (data, callback) {
@@ -241,23 +240,13 @@ function accessText(text) {
 }
 
 function _message(data, callback) {
-    var r = true;
-    if (!data.message) {
-        r = false;
-        callback({result: false, info: "Ошибка. Пустой текст."})
-    }
-    if (!data.sendFrom) {
-        r = false;
-        callback({result: false, info: "Ошибка. Не выбран отправитель."})
-    }
-    if (!data.room) {
-        r = false;
-        callback({result: false, info: "Ошибка. Не выбран диалог."})
-    }
-    if (data.message.length == 0) {
-        r = false;
-        callback({result: false, info: "Ошибка. Пустое сообщение.."})
-    }
+    var r = false;
+    (!data.message) ? callback({result: false, info: "Ошибка. Пустой текст."}) :
+        (!data.room) ? callback({result: false, info: "Ошибка. Не выбран диалог."}) :
+             (!data.sendFrom) ? callback({result: false, info: "Ошибка. Не выбран отправитель."}) :
+                (data.message.length == 0) ? callback({result: false, info: "Ошибка. Пустое сообщение."}) :
+                    r = true;
+
     var name = checkUser(data.sendFrom),
         room = data.room,
         onlySpace = true,
@@ -346,21 +335,16 @@ function _message(data, callback) {
 
 function _login(data, callback) {
     db.authorization(data.login, data.password)
-        .then(result => {
-            if (result) {
-                login.f(result, data.login);
+        .then(auth => {
+                login.f(true, data.login);
                 login.addRooms(db.loadRoom(data.login));
                 var name = data.login + '.' + handshake(data.login)
-                callback({result: result, name: name});
-            }
-            else {
-                callback({result: false, name: null, info: "логин/пароль не найден"});
-            }
+                callback({result: true, name: name});
         })
         .catch(error => {
             login.f(false, null);
             log("INFO", "Ошибка при авторизации", error);
-            callback({result: false, name: null});
+            callback({result: false, name: null, info : error});
         });
 }
 
@@ -412,36 +396,24 @@ function _deleteMessage(data, callback) {
 }
 
 function _addConversation(data, callback) {
-    var r = true;
-    if (!data.name) {
-        r = false;
-        callback({result: false, info: "Ошибка. Не выбрано название"});
-    }
-    if (!data.users) {
-        r = false;
-        callback({result: false, info: "Ошибка. Не выбраны пользователи"});
-    }
-    if (!checkUser(data.sendFrom)) {
-        r = false;
-        callback({result: false, info: "Ошибка. Пользователь не подписан"})
-    }
-    if (typeof(data.users) == "string") {
-        var users = data.users.split(",")
-    } else {
-        var users = data.users;
-    }
+    (!data.name) ? callback({result: false, info: "Ошибка. Не выбрано название"}) :
+        (!data.users) ? callback({result: false, info: "Ошибка. Не выбраны пользователи"}) :
+            (!checkUser(data.sendFrom)) ? callback({result: false, info: "Ошибка. Пользователь не подписан"}) :
+                function() {
+                    var sendFrom = checkUser(data.sendFrom),
+                        users = data.users;
+                    (typeof(users) == "string") ? users = users.split(",");
+                    db.addConversation(users, data.name)
+                        .then(result => {
+                            db.loadRoom(sendFrom)
+                        .then(result => {
+                            callback(result[0]);
+                })
+                })
+                .catch(error => {
+                        callback(false);
+                    log("INFO", "Ошибка при добавлении нового диалога в БД", [users, data.name, error]);
+                });
+                };
 
-    var sendFrom = checkUser(data.sendFrom);
-    if (r)
-        db.addConversation(users, data.name)
-            .then(result => {
-                db.loadRoom(sendFrom)
-                    .then(result => {
-                        callback(result[0]);
-                    });
-            })
-            .catch(error => {
-                callback(false);
-                log("INFO", "Ошибка при добавлении нового диалога в БД", [users, data.name, error]);
-            })
 }
