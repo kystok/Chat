@@ -17,15 +17,12 @@ const options = {
 };
 
 var httpServer = app.listen(port);
-httpServer.listen(port);
-require('../middleware/socketServer')(httpServer);
-
-
 var SSLserver = https.createServer(options,app);
+
+require('../middleware/socketServer')(httpServer, SSLserver);
+
+httpServer.listen(port);
 SSLserver.listen(SSLport);
-require('../middleware/socketServer')(SSLserver);
-
-
 
 require('../middleware/dbWare');
 

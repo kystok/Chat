@@ -12,9 +12,8 @@ const login = require('../routes/login'),
     download = require('image-downloader');
 
 
-module.exports = function (server) {
-
-    var io = require('socket.io').listen(server),
+module.exports = function (httpServer, SSLserver) {
+    var io = require('socket.io').listen(httpServer).listen(SSLserver),
         form = new multiparty.Form();
 
     io.on('connection', function (socket) {
@@ -31,14 +30,12 @@ module.exports = function (server) {
             })
         });
 
-
         socket.on('message', function (data, callback) {
             _message(data, function (data2) {
                 if (data2.result) socket.broadcast.to(data.room).emit('NEW', data2.backData);
                 callback(data2);
             })
         });
-
 
         socket.on('deleteMessage', function (data, callback) {
             _deleteMessage(data, function (data2) {
@@ -62,7 +59,6 @@ module.exports = function (server) {
                 })
         })
 
-
         socket.on('uploadFile', function (data, callback) {
             var username = checkUser(data.sendFrom);
             var d = {}
@@ -81,7 +77,6 @@ module.exports = function (server) {
                 })
         });
 
-
         socket.on('changeRoom', function (data, callback) {
             if (!data.room) callback({result: false, rows: false, info: "Ошибка. Не выбрана комната"})
             if (!data.limit) callback({result: false, rows: false, info: "Ошибка. Не выбран лимит"})
@@ -97,7 +92,6 @@ module.exports = function (server) {
                 });
         });
 
-
         socket.on('loadRoom', function (login, callback) {
             db.loadRoom(checkUser(login))
                 .then(result => {
@@ -109,11 +103,8 @@ module.exports = function (server) {
                     log("INFO", "Ошибка при загрузке диалогов", error);
                 })
         });
-
-
     });   //трансопрт. Разделил что бы в дальнейшем можно было просто поменять траспорт. Лучше в отдлеьный файл кинуть
 }
-
 
 function normaMessage(text) {
     var result = text,
@@ -127,13 +118,10 @@ function normaMessage(text) {
                 col = false;
             }
         }
-
         return result.replace(/\xa0/gim, ' ').replace(/([\u0020]*$)/gim, '').replace(/(^[\u0020]+)/gim, '');
-
     } else {
         return text;
     }
-
 }
 
 function downloadImage(url1, type, sendFrom, room) {
@@ -251,7 +239,6 @@ function accessText(text) {
                 return '&gt;'
         })
 }
-
 
 function _message(data, callback) {
     var r = true;
