@@ -11,6 +11,7 @@ var sessions = [];
 
 
 router.get('/', function(req, res, next) {
+    console.log("111");
     if (_auth) {
         if (username)
             db.addAccess(username, req.session.id)
@@ -26,6 +27,7 @@ router.get('/', function(req, res, next) {
             }
 
     } else {
+        console.log("111111111",req.session);
         db.access(req.session.id)
             .then(result => {
                 if (result[0].user) {

@@ -1,4 +1,3 @@
-QUnit.module("Log In module unit test");
 QUnit.test("log In", function (assert) {
     var name = name_global;
     assert.expect(5);

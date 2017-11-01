@@ -2,7 +2,7 @@ var t = new Date().getMilliseconds();
 var name_global = "test_" + t;
 var handshake;
 var simbol_global = UserSimbol();
-QUnit.module("Registration module unit test");
+
 function UserSimbol() {
     var s = '[~!@#$%^&*()_+=-?/\];,.:';
     var result = "";
@@ -14,8 +14,6 @@ function UserSimbol() {
 }
 
 QUnit.test("Registration", function (assert) {
-
-
     assert.expect(7);
     var done = assert.async(7);
     var fn = ln = lg = ps = name_global;
@@ -54,10 +52,9 @@ QUnit.test("Registration", function (assert) {
         done();
     });
 
-    var r = simbol_global;
-    fn = ln = lg = ps = r;
+    fn = ln = lg = ps = simbol_global;
     _reg(fn, ln, lg, ps, function (callback) {
-        assert.equal(callback.registration, true, "Спец.символы засщитаны. -- " + r + " -- Регистрация произведена");
+        assert.equal(callback.registration, true, "Спец.символы засщитаны. -->  " + simbol_global + "  <-- Регистрация произведена");
         done();
     });
 });

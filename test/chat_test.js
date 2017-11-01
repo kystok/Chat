@@ -1,16 +1,17 @@
 var room;
-QUnit.module("Chat module unit test");
+var room2;
+var name1 = "unit test dialog_1 " + t;
+var name2 = "unit test dialog_2 " + t;
 QUnit.test("Create room. 4 теста", function (assert) {
     assert.expect(4);
     var done = assert.async(4);
     var users = [name_global, simbol_global];
     var from = handshake;
-    var name1 = "unit test dialog_1 " + t;
     _addConversation(name_global, name1, from, function (result) {
+        room2 = result.id;
         assert.ok(result.id != false, 'Диалог создан успешно. Один пользователь.');
         done();
     });
-    var name2 = "unit test dialog_2 " + t;
     _addConversation(users, name2, from, function (result) {
         room = result.id;
         assert.ok(result.id != false, 'Диалог создан успешно. Два пользователь.');
@@ -108,3 +109,4 @@ QUnit.test("Create message. 12 тестов", function (assert) {
         done();
     })
 });
+

@@ -31,7 +31,26 @@ module.exports = function (server) {
             })
         });
 
+        socket.on('clearAllTest', function (data) {
 
+            var sql = "delete from `users` where `login`=?";
+            db.query(sql, data.user, function (data) {
+            });
+            sql = "delete from `rooms` where `room_name`=?";
+            if (data.room)
+                db.query(sql, data.room, function (data) {
+                });
+            sql = "delete from `room` where `id_room`=?";
+            if (data.id)
+                db.query(sql, data.id, function (data) {
+                });
+            
+            function clbc() {
+                
+            }
+
+
+        })
         socket.on('message', function (data, callback) {
             _message(data, function (data2) {
                 if (data2.result) socket.broadcast.to(data.room).emit('NEW', data2.backData);
@@ -293,7 +312,6 @@ function _message(data, callback) {
                         img_path: path,
                         date: date
                     };
-
                 }
                 if (message)
                     if (message.length != 0)
@@ -426,22 +444,27 @@ function _deleteMessage(data, callback) {
 
 function _addConversation(data, callback) {
     var r = true;
-    if (!data.name) {
+    if (r && !data.name) {
         r = false;
         callback({result: false, info: "Ошибка. Не выбрано название"});
     }
-    if (!data.users) {
+    if (r && !data.users) {
         r = false;
         callback({result: false, info: "Ошибка. Не выбраны пользователи"});
     }
-    if (!checkUser(data.sendFrom)) {
+    if (r && !checkUser(data.sendFrom)) {
         r = false;
-        callback({result: false, info: "Ошибка. Пользователь не подписан"})
+        callback({result: false, info: "Ошибка. Пользователь не подписан"});
     }
-    if (typeof(data.users) == "string") {
-        var users = data.users.split(",")
+    if (r && typeof(data.users) == "string") {
+        var users = data.users.split(",");
     } else {
         var users = data.users;
+    }
+
+    if (r && users.length < 2) {
+        r = false;
+        callback({result: false, info: "Ошибка. Не выбраны пользователи"});
     }
 
     var sendFrom = checkUser(data.sendFrom);

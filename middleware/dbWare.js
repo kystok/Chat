@@ -202,6 +202,7 @@ function deleteMessage(id, room) {
     })
 }
 
+
 module.exports = {
     addMessage: addMessage,
     loadRoom: loadRoom,
@@ -215,5 +216,6 @@ module.exports = {
     getUsers: getUsers,
     deleteMessage: deleteMessage,
     addConversation: addConversation,
-    authorization: authorization
+    authorization: authorization,
+    query: query
 }

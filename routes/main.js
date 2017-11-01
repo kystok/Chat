@@ -14,7 +14,7 @@ module.exports = function (app) {
         name,
         fs = require("fs");
 
-
+    console.log("main");
     app.use('/', login);
     app.use('/register', register);
     app.use('/logout', logout);
