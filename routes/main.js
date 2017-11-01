@@ -72,7 +72,7 @@ module.exports = function (app) {
             //читаем его тип
             uploadFile.type = part.headers['content-type'];
             //путь для сохранения файла
-            path = uploadFile.path = 'public/files/' + part.filename;
+            path = uploadFile.path = '../public/files/' + part.filename;
             name = part.filename;
             //проверяем размер файла, он не должен быть больше максимального размера
             if (uploadFile.size > maxSize) {
