@@ -1,13 +1,14 @@
-QUnit.module('Clear before testing');
+QUnit.module('Cleat all testData');
 QUnit.test('Clear', function (assert) {
     assert.expect();
-    var done = assert.async();
-    clear();
+    const done = assert.async();
+    clear(name_global,name,room);
     assert.equal(true, true, "Подчистили все");
     done();
-})
+    clear(simbol_global,name2,null);
+});
 
-function clear() {
-    socket.emit('clearAllTest', {user: name_global, room: name1, id: room});
-    socket.emit('clearAllTest', {user: simbol_global, room: name2, id: null});
+function clear(user, room, id) {
+    socket.emit('clearAllTest', {user, room, id}, data=> {
+    });
 }

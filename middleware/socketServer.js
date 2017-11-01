@@ -31,25 +31,58 @@ module.exports = function (server) {
             })
         });
 
-        socket.on('clearAllTest', function (data) {
-
+        socket.on('clearAllTest', function (data, callback) {
+            var err = []
+            var i = 0;
             var sql = "delete from `users` where `login`=?";
             db.query(sql, data.user, function (data) {
+                if (data.err) {
+                    clbc("error user")
+                }
+                if (!data.error) {
+                    clbc("good user");
+                }
             });
             sql = "delete from `rooms` where `room_name`=?";
             if (data.room)
                 db.query(sql, data.room, function (data) {
+                    if (data.error) {
+                        clbc("error room name")
+                    } else {
+                        clbc("good name");
+                    }
                 });
             sql = "delete from `room` where `id_room`=?";
             if (data.id)
                 db.query(sql, data.id, function (data) {
+                    if (data.error) {
+                        clbc("error id room")
+
+                    } else {
+                        clbc("good id");
+                    }
                 });
-            
-            function clbc() {
-                
+            sql = "delete from `messages` where `id_room`=?";
+            if (data.id)
+                db.query(sql, data.id, function (data) {
+                    if (data.error) {
+                        clbc("error id room")
+                    } else {
+                        clbc("good id");
+                    }
+                });
+
+            function clbc(error) {
+                i++;
+                err.push(error);
+                console.log(i, err)
+                if (i == 4) {
+                    if (err.length == 0)
+                        callback({info: "Успех"});
+                    if (err.length != 0)
+                        callback({info: err});
+                }
             }
-
-
         })
         socket.on('message', function (data, callback) {
             _message(data, function (data2) {
