@@ -1,23 +1,23 @@
-var app = require('../app');
-var debug = require('debug')('www2:server');
-const https = require('https');
-const http = require('http');
-const fs = require('fs');
-var path = require('path');
-const logger = require('../middleware/logger').logger(path.basename(__filename));
-const log = require('../middleware/logger').log;
-const host = require('../config.json').server;
+var app = require('../app'),
+    debug = require('debug')('www2:server'),
+    https = require('https'),
+    http = require('http'),
+    fs = require('fs'),
+    path = require('path'),
+    logger = require('../middleware/logger').logger(path.basename(__filename)),
+    log = require('../middleware/logger').log;
+    
+const host = require('../config.json').server,
+    options = {
+        key: fs.readFileSync('./privkey.pem'),
+        cert: fs.readFileSync('./fullchain.pem')
+    };
 
-var port = normalizePort(process.env.PORT || host.port);
-var SSLport = normalizePort(host.SSLport);
-
-const options = {
-  key: fs.readFileSync('./privkey.pem'),
-  cert: fs.readFileSync('./fullchain.pem')
-};
-
-var httpServer = app.listen(port);
-var SSLserver = https.createServer(options,app);
+var port = normalizePort(process.env.PORT || host.port),
+    SSLport = normalizePort(host.SSLport);
+ 
+var httpServer = app.listen(port),
+    SSLserver = https.createServer(options,app);
 
 require('../middleware/socketServer')(httpServer, SSLserver);
 
