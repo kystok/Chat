@@ -408,12 +408,12 @@ function _addConversation(data, callback) {
                             db.loadRoom(sendFrom)
                         .then(result => {
                             callback(result[0]);
-                })
-                })
-                .catch(error => {
-                        callback(false);
-                    log("INFO", "Ошибка при добавлении нового диалога в БД", [users, data.name, error]);
-                });
+                        })
+                        })
+                        .catch(error => {
+                            callback(false);
+                            log("INFO", "Ошибка при добавлении нового диалога в БД", [users, data.name, error]);
+                        });
                 };
 
 }
