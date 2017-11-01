@@ -33,7 +33,7 @@ module.exports = function (httpServer, SSLserver) {
             _message(data, function (message) {
                 if (message.result) socket.broadcast.to(data.room).emit('NEW', message.backData);
                 callback(message);
-            };
+            });
         });
 
         socket.on('deleteMessage', function (data, callback) {
