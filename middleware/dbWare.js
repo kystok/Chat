@@ -29,7 +29,7 @@ function query(sql, params, callback) {
 
 function authorization(login, password) {
     return new Promise(function (resolve, reject) {
-        var auth = false;
+        (login.length > 20) ? reject("Login is too big.") : "";
         var sql = 'SELECT `authUsers`(?, ?) AS `result`;';
         query(sql, [login, hash(login, password)], function (callback) {
             if (callback.error) {
@@ -38,12 +38,12 @@ function authorization(login, password) {
             };
             try {
                 if (callback.rows[0].result == 1) {
-                    auth = true;
-                    resolve(auth);
+                    console.log(callback.rows[0])
+                    resolve(true);
                 }
             } catch (e) {};
+            reject("wrong login/password");
         });
-        reject("wrong login/password");
     });
 };
 

@@ -35,7 +35,7 @@ QUnit.test("load messages 3 теста", function (assert) {
 
     var limit = 20;
     loadMessages(room, limit, function (data) {
-        assert.ok(data.result != false, data.info)
+        assert.ok(data.result == false, data.info)
         done();
     })
 

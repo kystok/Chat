@@ -402,7 +402,7 @@ function _addConversation(data, callback) {
                 function() {
                     var sendFrom = checkUser(data.sendFrom),
                         users = data.users;
-                    (typeof(users) == "string") ? users = users.split(",");
+                    (typeof(users) == "string") ? users = users.split(",") : "";
                     db.addConversation(users, data.name)
                         .then(result => {
                             db.loadRoom(sendFrom)
