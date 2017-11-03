@@ -27,8 +27,8 @@ describe("Создание диалога", function() {
             room1 = result.id;
             try {
                 assert.notEqual(result.result, false);
-            done();
-        } catch (e) { done(e) };
+                done();
+            } catch (e) { done(e) };
         });
     });
 
@@ -37,8 +37,8 @@ describe("Создание диалога", function() {
             room2 = result.id;
             try {
                 assert.notEqual(result.result, false);
-            done();
-        } catch (e) { done(e) };
+                done();
+            } catch (e) { done(e) };
         });
     });
 
@@ -46,8 +46,8 @@ describe("Создание диалога", function() {
         _addConversation(USER, "", from, function(result) {
             try {
                 assert.equal(result.result, false);
-            done();
-        } catch (e) { done(e) };
+                done();
+            } catch (e) { done(e) };
         });
     });
 
@@ -55,8 +55,8 @@ describe("Создание диалога", function() {
         _addConversation("", name, from, function(result) {
             try {
                 assert.equal(result.result, false);
-            done();
-        } catch (e) { done(e) };
+                done();
+            } catch (e) { done(e) };
         });
     });
 
@@ -64,8 +64,8 @@ describe("Создание диалога", function() {
         _addConversation(undefined, undefined, from, function(result) {
             try {
                 assert.equal(result.result, false);
-            done();
-        } catch (e) { done(e) };
+                done();
+            } catch (e) { done(e) };
         });
     });
 
@@ -75,8 +75,8 @@ describe("Создание диалога", function() {
             _delUsr(USER, function(callback) {
                 try {
                     assert.equal(callback, true, callback.info);
-                done();
-            } catch (e) { done(e) };
+                    done();
+                } catch (e) { done(e) };
             });
         });
 
@@ -84,8 +84,8 @@ describe("Создание диалога", function() {
             _delUsr(USER_SYMB, function(callback) {
                 try {
                     assert.equal(callback, true, callback.info);
-                done();
-            } catch (e) { done(e) };
+                    done();
+                } catch (e) { done(e) };
             });
         });
 
@@ -93,8 +93,8 @@ describe("Создание диалога", function() {
             _delConv(room1, function(callback) {
                 try {
                     assert.equal(callback, true, callback.info);
-                done();
-            } catch (e) { done(e) };
+                    done();
+                } catch (e) { done(e) };
             });
         });
 
@@ -102,8 +102,8 @@ describe("Создание диалога", function() {
             _delConv(room2, function(callback) {
                 try {
                     assert.equal(callback, true, callback.info);
-                done();
-            } catch (e) { done(e) };
+                    done();
+                } catch (e) { done(e) };
             });
         });
     });

@@ -9,7 +9,9 @@ describe("Регистрация", function() {
             try {
                 assert.equal(callback.registration, true);
                 done();
-            } catch (e) { done(e) };
+            } catch (e) {
+                done(e)
+            };
         });
     });
 
@@ -18,8 +20,10 @@ describe("Регистрация", function() {
         _reg(fn, ln, lg, ps, function(callback) {
             try {
                 assert.equal(callback.registration, false);
-            done();
-        } catch (e) { done(e) };
+                done();
+            } catch (e) {
+                done(e)
+            };
         });
     });
 
@@ -28,8 +32,10 @@ describe("Регистрация", function() {
         _reg(fn, ln, lg, ps, function(callback) {
             try {
                 assert.equal(callback.registration, false);
-            done();
-        } catch (e) { done(e) };
+                done();
+            } catch (e) {
+                done(e)
+            };
         });
     });
     it("undefined", function(done) {
@@ -37,8 +43,10 @@ describe("Регистрация", function() {
         _reg(fn, ln, lg, ps, function(callback) {
             try {
                 assert.equal(callback.registration, false);
-            done();
-        } catch (e) { done(e) };
+                done();
+            } catch (e) {
+                done(e)
+            };
         });
     });
     it("длинного пользователя", function(done) {
@@ -46,8 +54,10 @@ describe("Регистрация", function() {
         _reg(fn, ln, lg, ps, function(callback) {
             try {
                 assert.equal(callback.registration, false);
-            done();
-        } catch (e) { done(e) };
+                done();
+            } catch (e) {
+                done(e)
+            };
         });
     });
 
@@ -56,8 +66,10 @@ describe("Регистрация", function() {
         _reg(fn, ln, lg, ps, function(callback) {
             try {
                 assert.equal(callback.registration, true, callback.info);
-            done();
-        } catch (e) { done(e) };
+                done();
+            } catch (e) {
+                done(e)
+            };
         });
     });
 
@@ -67,8 +79,10 @@ describe("Регистрация", function() {
             _delUsr(USER, function(callback) {
                 try {
                     assert.equal(callback, true, callback.info);
-                done();
-            } catch (e) { done(e) };
+                    done();
+                } catch (e) {
+                    done(e)
+                };
             });
         });
 
@@ -76,8 +90,10 @@ describe("Регистрация", function() {
             _delUsr(USER_SYMB, function(callback) {
                 try {
                     assert.equal(callback, true, callback.info);
-                done();
-            } catch (e) { done(e) };
+                    done();
+                } catch (e) {
+                    done(e)
+                };
             });
         });
     });

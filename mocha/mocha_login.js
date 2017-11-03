@@ -17,8 +17,8 @@ describe("Авторизация", function() {
         _login(USER, USER, function(callback) {
             try {
                 assert.equal(callback.result, true);
-            done();
-        } catch (e) { done(e) };
+                done();
+            } catch (e) { done(e) };
         });
     });
 
@@ -26,8 +26,8 @@ describe("Авторизация", function() {
         _login(USER_SYMB, USER_SYMB, function(callback) {
             try {
                 assert.equal(callback.result, true);
-            done();
-        } catch (e) { done(e) };
+                done();
+            } catch (e) { done(e) };
         });
     });
 
@@ -36,8 +36,8 @@ describe("Авторизация", function() {
         _login(USER, USER_SYMB, function(callback) {
             try {
                 assert.equal(callback.result, false);
-            done();
-        } catch (e) { done(e) };
+                done();
+            } catch (e) { done(e) };
         });
     });
 
@@ -45,8 +45,8 @@ describe("Авторизация", function() {
         _login("", USER, function(callback) {
             try {
                 assert.equal(callback.result, false);
-            done();
-        } catch (e) { done(e) };
+                done();
+            } catch (e) { done(e) };
         });
     });
 
@@ -54,8 +54,8 @@ describe("Авторизация", function() {
         _login(USER, "", function(callback) {
             try {
                 assert.equal(callback.result, false);
-            done();
-        } catch (e) { done(e) };
+                done();
+            } catch (e) { done(e) };
         });
     })
 
@@ -63,8 +63,8 @@ describe("Авторизация", function() {
         _login(USER + USER + USER + USER, USER, function(callback) {
             try {
                 assert.equal(callback.result, false);
-            done();
-        } catch (e) { done(e) };
+                done();
+            } catch (e) { done(e) };
         });
     });
 
@@ -72,8 +72,8 @@ describe("Авторизация", function() {
         _login(USER, USER + USER + USER + USER, function(callback) {
             try {
                 assert.equal(callback.result, false);
-            done();
-        } catch (e) { done(e) };
+                done();
+            } catch (e) { done(e) };
         });
     });
 
@@ -83,8 +83,8 @@ describe("Авторизация", function() {
             _delUsr(USER, function(callback) {
                 try {
                     assert.equal(callback, true, callback.info);
-                done();
-            } catch (e) { done(e) };
+                    done();
+                } catch (e) { done(e) };
             });
         });
 
@@ -92,8 +92,8 @@ describe("Авторизация", function() {
             _delUsr(USER_SYMB, function(callback) {
                 try {
                     assert.equal(callback, true, callback.info);
-                done();
-            } catch (e) { done(e) };
+                    done();
+                } catch (e) { done(e) };
             });
         });
     });
