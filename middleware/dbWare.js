@@ -148,10 +148,9 @@ function addConversation(users, name) {
         var sql = "CALL `addConversation` (?,?)";
         for (var i = 0; i < users.length; i++) {
             query(sql, [name, users[i]], function (callback) {
-                if (callback.error) reject(callback.error);
+                (callback.error) ? reject(callback.error) : resolve({result: true});;
             });
         };
-        resolve({result: true});
     });
 };
 

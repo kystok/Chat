@@ -410,8 +410,7 @@ function _deleteMessage(data, callback) {
 function _addConversation(data, callback) {
     (!data.name) ? callback({result: false, info: "Ошибка. Не выбрано название"}) :
         (!data.users) ? callback({result: false, info: "Ошибка. Не выбраны пользователи"}) :
-            (!checkUser(data.sendFrom)) ? callback({result: false, info: "Ошибка. Пользователь не подписан"}) :
-                function() {
+            (!checkUser(data.sendFrom)) ? callback({result: false, info: "Ошибка. Пользователь не подписан"}) : "";
                     var sendFrom = checkUser(data.sendFrom),
                         users;
                     (typeof(data.users) == "string") ? users = data.users.split(",") : users = data.users;
@@ -426,7 +425,6 @@ function _addConversation(data, callback) {
                             callback({result: false, info: "SQL error"});
                             log("INFO", "Ошибка при добавлении нового диалога в БД", [users, data.name, error]);
                         });
-                };
 
 }
 
