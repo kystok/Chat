@@ -1,30 +1,51 @@
 
-
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <title>QUnit Example</title>
-    <link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-2.4.1.css">
+
+    <script src="../public/js/socket.io.js"></script>
+    <script src="../public/js/sock_debug.js"></script>
+    <script src="../public/js/sock.js"></script>
+    <script src="../public/js/register.js"></script>
+    <script src="../public/js/client.js"></script>
+    <script src="../public/js/login.js"></script>
+    <script src="connect_test.js"></script>
+    <script src="registration_test.js"></script>
+    <script src="login_test.js"></script>
+    <script src="chat_test.js"></script>
+
+    <!-- подключаем стили Mocha, для отображения результатов -->
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/mocha/2.1.0/mocha.css">
+    <!-- подключаем библиотеку Mocha -->
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/mocha/2.1.0/mocha.js"></script>
+    <!-- настраиваем Mocha: предстоит BDD-тестирование -->
+    <script>
+        mocha.setup('bdd');
+    </script>
+
+    <!-- подключаем chai -->
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/chai/2.0.0/chai.js"></script>
+    <!-- в chai есть много всего, выносим assert в глобальную область -->
+    <script>
+        var assert = chai.assert;
+    </script>
 </head>
+
 <body>
-<div id="qunit"></div>
-<div id="qunit-fixture"></div>
-<script src="https://code.jquery.com/qunit/qunit-2.4.1.js"></script>
-<script type="text/javascript" src="https://code.jquery.com/jquery-1.8.3.js"></script>
-<script src="../js/socket.io.js"></script>
-<script src="../js/sock_debug.js"></script>
-<script src="../js/sock.js"></script>
-<script src="../js/register.js"></script>
-<script src="../js/client.js"></script>
-<script src="../js/login.js"></script>
-<script src="connect_test.js"></script>
-<script src="registration_test.js"></script>
-<script src="login_test.js"></script>
-<script src="chat_test.js"></script>
+
+
+<!-- в этом скрипте находятся спеки -->
+<script src="test.js"></script>
+
+<!-- в элементе с id="mocha" будут результаты тестов -->
+<div id="mocha"></div>
+
+<!-- запустить тесты! -->
+<script>
+    mocha.run();
+</script>
 </body>
+
 </html>
-
-
-

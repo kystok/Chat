@@ -18,3 +18,10 @@ function _reg(firstName, lastName, login, pass, callback) {
         callback(data);
     });
 }
+
+function _delUsr(login, callback) {
+    socket.emit('deleteUser', login,
+        function (data) {
+            callback(data);
+        });
+}

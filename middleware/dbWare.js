@@ -164,6 +164,17 @@ function deleteMessage(id, room) {
     });
 };
 
+
+function deleteUser(login) {
+    return new Promise(function (resolve, reject) {
+        var sql = 'DELETE FROM `users` WHERE `login`= ?';
+        query(sql, login, function (callback) {
+            (callback.error) ? reject(callback.error) : resolve("User " + login + "was deleted");
+        });
+    });
+};
+
+
 module.exports = {
     addMessage: addMessage,
     loadRoom: loadRoom,
@@ -177,5 +188,6 @@ module.exports = {
     getUsers: getUsers,
     deleteMessage: deleteMessage,
     addConversation: addConversation,
-    authorization: authorization
+    authorization: authorization,
+    deleteUser : deleteUser
 }

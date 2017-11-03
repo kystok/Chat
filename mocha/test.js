@@ -66,6 +66,7 @@ describe("Очистка", function() {
 
     it("тестового пользователя", function (done) {
         _delUsr(USER, function (callback) {
+            console.log(callback);
             assert.equal(callback, true, callback.info);
             done();
         });

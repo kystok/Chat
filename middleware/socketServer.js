@@ -11,8 +11,8 @@ const login = require('../routes/login'),
     sha512 = require('js-sha512'),
     download = require('image-downloader');
 
-module.exports = function (httpServer, SSLserver) {
-    var io = require('socket.io').listen(httpServer).listen(SSLserver),
+module.exports = function (httpServer/*, SSLserver*/) {
+    var io = require('socket.io').listen(httpServer)/*.listen(SSLserver)*/,
         form = new multiparty.Form();
 
     io.on('connection', function (socket) {
@@ -56,6 +56,12 @@ module.exports = function (httpServer, SSLserver) {
                 .catch(error => {
                     log("WARN", "Ошибка при загрузке юзеров", error)
                 });
+        });
+
+        socket.on('deleteUser', function (username, callback) {
+            _deleteUser(username, function (result) {
+                callback(result);
+            });
         });
 
         socket.on('uploadFile', function (data, callback) {
@@ -416,4 +422,16 @@ function _addConversation(data, callback) {
                         });
                 };
 
+}
+
+function _deleteUser(username, callback) {
+    db.deleteUser(username)
+        .then(result => {
+        log("INFO", result);
+        callback(true);
+})
+.catch(error => {
+        log("INFO", "Ошибка при удалении пользователя", error);
+        callback(false);
+})
 }
