@@ -64,6 +64,12 @@ module.exports = function (httpServer/*, SSLserver*/) {
             });
         });
 
+        socket.on('deleteConversation', function (room, callback) {
+            _deleteConversation(room, function (result) {
+                callback(result);
+            });
+        });
+
         socket.on('uploadFile', function (data, callback) {
             var username = checkUser(data.sendFrom);
             var d = {}
@@ -407,8 +413,8 @@ function _addConversation(data, callback) {
             (!checkUser(data.sendFrom)) ? callback({result: false, info: "Ошибка. Пользователь не подписан"}) :
                 function() {
                     var sendFrom = checkUser(data.sendFrom),
-                        users = data.users;
-                    (typeof(users) == "string") ? users = users.split(",") : "";
+                        users;
+                    (typeof(data.users) == "string") ? users = data.users.split(",") : users = data.users;
                     db.addConversation(users, data.name)
                         .then(result => {
                             db.loadRoom(sendFrom)
@@ -417,7 +423,7 @@ function _addConversation(data, callback) {
                         })
                         })
                         .catch(error => {
-                            callback(false);
+                            callback({result: false, info: "SQL error"});
                             log("INFO", "Ошибка при добавлении нового диалога в БД", [users, data.name, error]);
                         });
                 };
@@ -434,4 +440,16 @@ function _deleteUser(username, callback) {
         log("INFO", "Ошибка при удалении пользователя", error);
         callback(false);
 })
-}
+};
+
+function _deleteConversation(room, callback) {
+    db.deleteConversation(room)
+        .then(result => {
+        log("INFO", result);
+    callback(true);
+})
+.catch(error => {
+        log("INFO", "Ошибка при удалении комнаты", error);
+    callback(false);
+})
+};

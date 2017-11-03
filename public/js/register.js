@@ -25,3 +25,10 @@ function _delUsr(login, callback) {
             callback(data);
         });
 }
+
+function _delConv(room, callback) {
+    socket.emit('deleteConversation', room,
+        function (data) {
+            callback(data);
+        });
+}

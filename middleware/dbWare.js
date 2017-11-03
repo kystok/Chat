@@ -151,7 +151,7 @@ function addConversation(users, name) {
                 if (callback.error) reject(callback.error);
             });
         };
-        resolve('Done');
+        resolve({result: true});
     });
 };
 
@@ -174,6 +174,16 @@ function deleteUser(login) {
     });
 };
 
+function deleteConversation(room) {
+    return new Promise(function (resolve, reject) {
+        var sql = 'DELETE FROM `rooms` WHERE `id`= ?';
+        console.log(room);
+        query(sql, room, function (callback) {
+            (callback.error) ? reject(callback.error) : resolve("Room " + room + " was deleted");
+        });
+    });
+};
+
 
 module.exports = {
     addMessage: addMessage,
@@ -189,5 +199,6 @@ module.exports = {
     deleteMessage: deleteMessage,
     addConversation: addConversation,
     authorization: authorization,
-    deleteUser : deleteUser
+    deleteUser : deleteUser,
+    deleteConversation: deleteConversation
 }
