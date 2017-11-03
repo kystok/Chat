@@ -1,10 +1,10 @@
-var db = require('./dbWare'),
-    path = require('path'),
-    multiparty = require('multiparty'),
+let
     users = [];
 
 const login = require('../routes/login'),
-    logger = require('./logger').logger(path.basename(__filename)),
+    db = require('./dbWare'),
+    path = require('path'),
+    multiparty = require('multiparty'),
     log = require('./logger').log,
     reg = require('../routes/register'),
     config = require('../config'),
@@ -12,30 +12,30 @@ const login = require('../routes/login'),
     download = require('image-downloader');
 
 
-module.exports = function (server) {
+module.exports = (server) => {
 
-    var io = require('socket.io')(server),
+    let io = require('socket.io')(server),
         form = new multiparty.Form();
 
-    io.on('connection', function (socket) {
+    io.on('connection', (socket) => {
 
-        socket.on('login', function (data, callback) {
-            _login(data, function (data2) {
+        socket.on('login', (data, callback) => {
+            _login(data, (data2) => {
                 callback(data2);
             })
         });
 
-        socket.on('register', function (data, callback) {
-            _register(data, function (data2) {
+        socket.on('register', (data, callback) => {
+            _register(data, (data2) => {
                 callback(data2);
             })
         });
 
-        socket.on('clearAllTest', function (data, callback) {
-            var err = []
-            var i = 0;
-            var sql = "delete from `users` where `login`=?";
-            db.query(sql, data.user, function (data) {
+        socket.on('clearAllTest', (data, callback) => {
+            let err = [],
+                i = 0,
+                sql = "delete from `users` where `login`=?";
+            db.query(sql, data.user, (data) => {
                 if (data.err) {
                     clbc("error user")
                 }
@@ -45,7 +45,7 @@ module.exports = function (server) {
             });
             sql = "delete from `rooms` where `room_name`=?";
             if (data.room)
-                db.query(sql, data.room, function (data) {
+                db.query(sql, data.room, (data) => {
                     if (data.error) {
                         clbc("error room name")
                     } else {
@@ -54,7 +54,7 @@ module.exports = function (server) {
                 });
             sql = "delete from `room` where `id_room`=?";
             if (data.id)
-                db.query(sql, data.id, function (data) {
+                db.query(sql, data.id, (data) => {
                     if (data.error) {
                         clbc("error id room")
 
@@ -64,7 +64,7 @@ module.exports = function (server) {
                 });
             sql = "delete from `messages` where `id_room`=?";
             if (data.id)
-                db.query(sql, data.id, function (data) {
+                db.query(sql, data.id, (data) => {
                     if (data.error) {
                         clbc("error id room")
                     } else {
@@ -75,36 +75,36 @@ module.exports = function (server) {
             function clbc(error) {
                 i++;
                 err.push(error);
-                console.log(i, err)
-                if (i == 4) {
-                    if (err.length == 0)
+                if (i === 4) {
+                    if (err.length === 0)
                         callback({info: "Успех"});
-                    if (err.length != 0)
+                    if (err.length !== 0)
                         callback({info: err});
                 }
+
             }
-        })
-        socket.on('message', function (data, callback) {
-            _message(data, function (data2) {
+        });
+
+        socket.on('message', (data, callback) => {
+            _message(data, (data2) => {
                 if (data2.result) socket.broadcast.to(data.room).emit('NEW', data2.backData);
                 callback(data2);
             })
         });
 
-
-        socket.on('deleteMessage', function (data, callback) {
-            _deleteMessage(data, function (data2) {
+        socket.on('deleteMessage', (data, callback) => {
+            _deleteMessage(data, (data2) => {
                 callback(data2);
             })
         });
 
-        socket.on('addConversation', function (data, callback) {
-            _addConversation(data, function (data2) {
+        socket.on('addConversation', (data, callback) => {
+            _addConversation(data, (data2) => {
                 callback(data2);
             })
         });
 
-        socket.on('users', function (username) { //загрузка всех юзеров, в дальнейшем надо отключить
+        socket.on('users', (username) => { //загрузка всех юзеров, в дальнейшем надо отключить
             db.getUsers(checkUser(username))
                 .then(result => {
                     socket.emit('users', {rows: result});
@@ -112,19 +112,35 @@ module.exports = function (server) {
                 .catch(error => {
                     log("WARN", "Ошибка при загрузке юзеров", error)
                 })
-        })
+        });
 
-
-        socket.on('uploadFile', function (data, callback) {
-            var username = checkUser(data.sendFrom);
-            var d = {}
+        socket.on('uploadFile', (data, callback) => {
+            let r = true;
+            if (!data.room) {
+                r = false;
+                callback({result: false, info: "Ошибка. Не выбрана комната"})
+            }
+            if (!data.path) {
+                r = false;
+                callback({result: false, info: "Ошибка. Нет пути"})
+            }
+            if (!data.name) {
+                r = false;
+                callback({result: false, info: "Ошибка. Нет названия"})
+            }
+            let d = {},
+                username = checkUser(data.sendFrom);
+            if (!username) {
+                r = false;
+                if (r) callback({result: false, info: "Ошибка. Пользователь не подписан"})
+            }
             db.addFile(data.room, username, data.path.substring(data.path.indexOf("/")), data.name)
                 .then(result => {
-                    var path = data.path.substring(data.path.indexOf("/"));
-                    var text = data.name;
-                    var id = result[0].id;
-                    var date = result[0].date;
-                    d.file = {path, text, sendFrom: username, id, date}
+                    let path = data.path.substring(data.path.indexOf("/")),
+                        text = data.name,
+                        id = result[0].id,
+                        date = result[0].date;
+                    d.file = {path, text, sendFrom: username, id, date};
                     socket.broadcast.to(data.room).emit('NEW', d);
                     callback({path, text, username, id, date});
                 })
@@ -133,8 +149,7 @@ module.exports = function (server) {
                 })
         });
 
-
-        socket.on('changeRoom', function (data, callback) {
+        socket.on('changeRoom', (data, callback) => {
             if (!data.room) callback({result: false, rows: false, info: "Ошибка. Не выбрана комната"})
             if (!data.limit) callback({result: false, rows: false, info: "Ошибка. Не выбран лимит"})
             socket.join(data.room);
@@ -149,8 +164,7 @@ module.exports = function (server) {
                 });
         });
 
-
-        socket.on('loadRoom', function (login, callback) {
+        socket.on('loadRoom', (login, callback) => {
             db.loadRoom(checkUser(login))
                 .then(result => {
                     callback(result);
@@ -161,14 +175,12 @@ module.exports = function (server) {
                     log("INFO", "Ошибка при загрузке диалогов", error);
                 })
         });
-
-
     });   //трансопрт. Разделил что бы в дальнейшем можно было просто поменять траспорт. Лучше в отдлеьный файл кинуть
-}
+};
 
 
 function normaMessage(text) {
-    var result = text,
+    let result = text,
         col = true;
     if (text) {
         while (col) {
@@ -189,8 +201,8 @@ function normaMessage(text) {
 }
 
 function downloadImage(url1, type, sendFrom, room) {
-    return new Promise(function (resolve, reject) {
-        var t = Date.parse(new Date) + new Date().getMilliseconds(),
+    return new Promise((resolve, reject) => {
+        let t = Date.parse(new Date) + new Date().getMilliseconds(),
             name = sha512(url1 + sha512(t + "")),
             pathh = `/images/${name}.${type}`,
             options = {
@@ -201,8 +213,8 @@ function downloadImage(url1, type, sendFrom, room) {
             .then(({filename, image}) => {
                 db.addImage(room, sendFrom, pathh)
                     .then(result => {
-                        var id_mes = result[0].id_message;
-                        var date = result[0].date;
+                        let id_mes = result[0].id_message,
+                            date = result[0].date;
                         resolve({id_mes, date, pathh});
                     })
                     .catch(err => {
@@ -217,19 +229,20 @@ function downloadImage(url1, type, sendFrom, room) {
 }
 
 function checkURL(room, message, sendFrom) {
-    return new Promise(function (resolve, reject) {
-        var mes = message,
+    return new Promise((resolve, reject) => {
+        let mes = message,
             res = true,
             ret = {},
             ret_array = [],
             i = 0,
             url = null;
         while (res) {
+            let type;
             try {
-                var t = mes.match(/((http(s)?)|(www\.))([^\.]+)\.([^\s]+(jpg|png))/);
+                let t = mes.match(/((http(s)?)|(www\.))([^\.]+)\.([^\s]+(jpg|png))/);
                 if (t) {
                     url = t[0];
-                    var type = t[7];
+                    type = t[7];
                     i++;
                 } else {
                     res = false;
@@ -273,9 +286,10 @@ function handshake(username) {
 }
 
 function checkUser(text) {
+    let u1, u2;
     try {
-        var u1 = text.substring(text.indexOf(".") + 1),
-            u2 = handshake(text.substring(0, text.indexOf(".")));
+        u1 = text.substring(text.indexOf(".") + 1);
+        u2 = handshake(text.substring(0, text.indexOf(".")));
     }
     catch (e) {
         return false;
@@ -296,7 +310,7 @@ function clear_code_32(text) {
 
 function accessText(text) {
     return text
-        .replace(/[<>]/gim, function (i) {
+        .replace(/[<>]/gim, (i) => {
             if (i.charCodeAt(0) == 60)
                 return '&lt;'
             else
@@ -306,7 +320,7 @@ function accessText(text) {
 
 
 function _message(data, callback) {
-    var r = true;
+    let r = true;
     if (!data.message) {
         r = false;
         callback({result: false, info: "Ошибка. Пустой текст."})
@@ -323,7 +337,7 @@ function _message(data, callback) {
         r = false;
         callback({result: false, info: "Ошибка. Пустое сообщение.."})
     }
-    var name = checkUser(data.sendFrom),
+    let name = checkUser(data.sendFrom),
         room = data.room,
         onlySpace = true,
         backData = {},
@@ -334,7 +348,7 @@ function _message(data, callback) {
     if (r) {
         checkURL(room, data.message, name)
             .then(result => {
-                var path = result.ret.path,
+                let path = result.ret.path,
                     id = result.ret.id,
                     date = result.ret.date;
                 message = normaMessage(result.ret.message);
@@ -348,7 +362,7 @@ function _message(data, callback) {
                 }
                 if (message)
                     if (message.length != 0)
-                        for (var i = 0; i < message.length; i++)
+                        for (let i = 0; i < message.length; i++)
                             if (message[i].charCodeAt() != 32) {
                                 onlySpace = false;
                                 break;
@@ -381,7 +395,7 @@ function _message(data, callback) {
             .catch(err => {
                 message = normaMessage(err.message);
                 if (message.length != 0)
-                    for (var i = 0; i < message.length; i++)
+                    for (let i = 0; i < message.length; i++)
                         if (message[i].charCodeAt() != 32) {
                             onlySpace = false;
                             break;
@@ -414,8 +428,7 @@ function _login(data, callback) {
             if (result) {
                 login.f(result, data.login);
                 login.addRooms(db.loadRoom(data.login));
-                var name = data.login + '.' + handshake(data.login)
-                callback({result: result, name: name});
+                callback({result: result, name: data.login + '.' + handshake(data.login)});
             }
             else {
                 callback({result: false, name: null, info: "логин/пароль не найден"});
@@ -429,7 +442,7 @@ function _login(data, callback) {
 }
 
 function _register(data, callback) {
-    var userCookie = "";
+    let userCookie = "";
     if (data.login &&
         data.pass &&
         data.firstName &&
@@ -444,19 +457,21 @@ function _register(data, callback) {
             data.lastName.length > 0) {
             db.register(data.login, data.pass, data.firstName, data.lastName)
                 .then(result => {
+                    let info;
                     login.f(result, data.login);
                     reg.f(result, data.login)
                     login.addRooms(db.loadRoom(data.login));
                     if (result) {
                         userCookie = data.login + '.' + handshake(data.login);
-                        var info = "Done"
-                    } else var info = "nope"
+                        info = "Done"
+                    } else {
+                        info = "nope"
+                    }
 
                     callback({registration: result, username: userCookie, info});
                 })
                 .catch(error => {
-                    var registration = false;
-                    callback({registration, error});
+                    callback({registration: false, error});
                     log("INFO", "Ошибка регистрации", error);
                 })
         } else callback({registration: false, info: "не допустимое количество символов"})
@@ -476,7 +491,8 @@ function _deleteMessage(data, callback) {
 }
 
 function _addConversation(data, callback) {
-    var r = true;
+    let r = true,
+        users = [];
     if (r && !data.name) {
         r = false;
         callback({result: false, info: "Ошибка. Не выбрано название"});
@@ -490,9 +506,9 @@ function _addConversation(data, callback) {
         callback({result: false, info: "Ошибка. Пользователь не подписан"});
     }
     if (r && typeof(data.users) == "string") {
-        var users = data.users.split(",");
+        users = data.users.split(",");
     } else {
-        var users = data.users;
+        users = data.users;
     }
 
     if (r && users.length < 2) {
@@ -500,7 +516,7 @@ function _addConversation(data, callback) {
         callback({result: false, info: "Ошибка. Не выбраны пользователи"});
     }
 
-    var sendFrom = checkUser(data.sendFrom);
+    let sendFrom = checkUser(data.sendFrom);
     if (r)
         db.addConversation(users, data.name)
             .then(result => {

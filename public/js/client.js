@@ -69,7 +69,11 @@ function createHistory(data) {
 
 
 function deleteMessage(id_message, id_room) {
-    return socket.emit('deleteMessage', {id_message: id_message, id_room: id_room, sendFrom: getUsername()}, function (result) {
+    return socket.emit('deleteMessage', {
+        id_message: id_message,
+        id_room: id_room,
+        sendFrom: getUsername()
+    }, function (result) {
         if (result == "Done") {
             return true;
         } else {
@@ -214,7 +218,7 @@ function uploadFile() {
                     room: room,
                     sendFrom: getUsername()
                 },
-                function (data) {
+                (data) => {
                     newMessageFile(data.username, data.path, "myMessage", timeMessage(data.date), data.text, data.id);
                 })
         }
