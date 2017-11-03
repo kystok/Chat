@@ -1,15 +1,15 @@
-var path;
-const fs = require('fs');
-const logDir = '../log/log/';
-const jsonDir = '../log/json/';
+let path;
+const fs = require('fs'),
+    logDir = '../log/log/',
+    jsonDir = '../log/json/';
 
 
 function log(type, text, info) {
 
-    var t = new Date();
+    let t = new Date();
     if (info === undefined)
         info = "no info";
-    var res = {};
+    let res = {};
     switch (type) {
         case 'WARN':
             res.WARN = {
@@ -48,8 +48,8 @@ function log(type, text, info) {
             break;
     }
 
-    var json_path = jsonDir + t.getFullYear() + '_' + t.getMonth() + '_' + t.getDate() + '.json';
-    var log_path = logDir + t.getFullYear() + '_' + t.getMonth() + '_' + t.getDate() + '.log';
+    let json_path = jsonDir + t.getFullYear() + '_' + t.getMonth() + '_' + t.getDate() + '.json',
+        log_path = logDir + t.getFullYear() + '_' + t.getMonth() + '_' + t.getDate() + '.log';
 
     if (type) {
 	console.log("------------");
@@ -59,9 +59,6 @@ function log(type, text, info) {
        // writeLog(res, log_path);
        // writeLog(res, json_path);
     }
-
-
-    ;
 }
 
 function logger(_path) {
@@ -76,19 +73,17 @@ module.exports = {
 
 
 function writeLog(text, path) {
-    var te = new Array();
-    fs.appendFile(path, "", function (err) {
+    let te = [];
+    fs.appendFile(path, "", (err) => {
         try {
-            var t1 = fs.readFile(path, 'utf-8',
-                function (error, data) {
+            let t1 = fs.readFile(path, 'utf-8',
+                (error, data) => {
                     if (error) return "error";
                     if (data) {
                         try {
                             te = JSON.parse(data);
                         } catch (e) {
-
                         }
-
                     }
                     te.push(text);
                     fs.writeFile(path, JSON.stringify(te), function (err) {
@@ -98,6 +93,7 @@ function writeLog(text, path) {
         } catch (e) {
         }
     });
+<<<<<<< HEAD
 
     /* fs.appendFile(log_path, "", function (err) {
          try {
@@ -119,3 +115,6 @@ function writeLog(text, path) {
      });*/
 
 }
+=======
+}
+>>>>>>> orlov

@@ -9,6 +9,7 @@ var username;
 
 router.get('/', function(req, res, next) {
     //log("TRACE", "начальное", );
+    console.log("1234");
     if (_auth) {
         if (req.cookies.auth != null || req.cookies.auth != undefined) {} else {
             var cookie = req.session.id;

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 var app = require('../app'),
     debug = require('debug')('www2:server'),
     https = require('https'),
@@ -8,27 +9,56 @@ var app = require('../app'),
     log = require('../middleware/logger').log;
     
 const host = require('../config.json').server,
+=======
+const
+    debug = require('debug')('www2:server'),
+    app = require('../app'),
+    path = require('path'),
+    logger = require('../middleware/logger').logger(path.basename(__filename)),
+    log = require('../middleware/logger').log,
+    host = require('../config.json').server,
+    http = require('http'),
+    https = require('https'),
+    port = normalizePort(process.env.PORT || host.port),
+    httpServer = app.listen(port),
+    fs = require('fs'),
+    _host = require('../config.json').server,
+>>>>>>> orlov
     options = {
         key: fs.readFileSync('./privkey.pem'),
         cert: fs.readFileSync('./fullchain.pem')
     };
+<<<<<<< HEAD
 
 var port = normalizePort(process.env.PORT || host.port),
     SSLport = normalizePort(host.SSLport);
  
 var httpServer = app.listen(port),
     SSLserver = https.createServer(options,app);
+=======
+let    SSLport = normalizePort(host.SSLport),
+    SSLserver = https.createServer(options,app);
+
+httpServer.listen(port);
+SSLserver.listen(SSLport);
+>>>>>>> orlov
 
 require('../middleware/socketServer')(httpServer, SSLserver);
 
+<<<<<<< HEAD
 httpServer.listen(port);
 SSLserver.listen(SSLport);
 
 require('../middleware/dbWare');
+=======
+require('../middleware/socketServer')(httpServer, SSLserver);
+require('../middleware/dbWare');
+
+>>>>>>> orlov
 
 
 function normalizePort(val) {
-    var port = parseInt(val, 10);
+    let port = parseInt(val, 10);
 
     if (isNaN(port)) {
         // named pipe
@@ -49,7 +79,7 @@ function onError(error) {
         log("ERROR", "ошибка", error);
     }
 
-    var bind = typeof port === 'string' ?
+    let bind = typeof port === 'string' ?
         'Pipe ' + port :
         'Port ' + port;
 
@@ -73,9 +103,9 @@ function onError(error) {
  */
 
 function onListening() {
-    var addr = server.address();
-    var bind = typeof addr === 'string' ?
-        'pipe ' + addr :
-        'port ' + addr.port;
+    const addr = httpServer.address(),
+        bind = typeof addr === 'string' ?
+            'pipe ' + addr :
+            'port ' + addr.port;
     debug('Listening on ' + bind);
 }

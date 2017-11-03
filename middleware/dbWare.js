@@ -1,23 +1,23 @@
-const sha512 = require('js-sha512');
-var mysql = require('mysql');
-const config = require('../config');
-var path = require('path');
-const logger = require('./logger').logger(path.basename(__filename));
-const log = require('./logger').log;
-var options = {
-    host: config.db.clients.host,
-    port: config.db.clients.port,
-    user: config.db.clients.user,
-    password: config.db.clients.password,
-    database: config.db.clients.database
-}
-var pool = mysql.createPool(options);
+const config = require('../config'),
+    mysql = require('mysql'),
+    path = require('path'),
+    options = {
+        host: config.db.clients.host,
+        port: config.db.clients.port,
+        user: config.db.clients.user,
+        password: config.db.clients.password,
+        database: config.db.clients.database
+    },
+    pool = mysql.createPool(options),
+    sha512 = require('js-sha512'),
+    logger = require('./logger').logger(path.basename(__filename)),
+    log = require('./logger').log;
 
 
 function query(sql, params, callback) {
     try {
-        pool.getConnection(function (error, connection) {
-            connection.query(sql, params, function (error, rows) {
+        pool.getConnection((error, connection) => {
+            connection.query(sql, params, (error, rows) => {
                 connection.release();
                 //console.log(sql, params)
                 //console.log({error, rows})
@@ -31,23 +31,21 @@ function query(sql, params, callback) {
 
 
 function authorization(login, password) {
-    return new Promise(function (resolve, reject) {
-        if (login != "" || password != "") {
-            var sql = 'SELECT `authUsers`(?, ?) AS `result`;';
-
-            query(sql, [login, hash(login, password)], function (callback) {
-                var auth = false;
+    return new Promise((resolve, reject) => {
+        if (login !== "" || password !== "") {
+            const sql = 'SELECT `authUsers`(?, ?) AS `result`;';
+            query(sql, [login, hash(login, password)], (callback) => {
+                let auth = false;
                 if (callback.error) {
                     log("WARN", "авторизация", callback.error);
                     reject(callback.error);
                 }
-                ;
                 if (callback.rows) {
                     if (callback.rows[0])
-                        if (callback.rows[0].result == 1) {
+                        if (callback.rows[0].result === 1) {
                             auth = true;
                         }
-                    if (callback.rows[0].result == 1) {
+                    if (callback.rows[0].result === 1) {
                         auth = true;
                     }
                 } else auth = false;
@@ -57,17 +55,17 @@ function authorization(login, password) {
             resolve(false);
         }
     });
-};
+}
 
 function hash(login, pass) {
-    return hash_password = sha512(pass + sha512(login));
-};
+    return sha512(pass + sha512(login));
+}
 
 
 function addAccess(login, session) {
-    return new Promise(function (resolve, reject) {
-        var sql = "CALL `access_mod`(?, ?)";
-        query(sql, [login, session], function (callback) {
+    return new Promise((resolve, reject) => {
+        const sql = "CALL `access_mod`(?, ?)";
+        query(sql, [login, session], (callback) => {
             if (callback.error) {
                 reject(callback.error);
             }
@@ -80,9 +78,9 @@ function addAccess(login, session) {
 
 
 function access(session) {
-    return new Promise(function (resolve, reject) {
-        var sql = "SELECT `user` FROM `access` WHERE `session` = ? order by id DESC limit 1"
-        query(sql, session, function (callback) {
+    return new Promise((resolve, reject) => {
+        const sql = "SELECT `user` FROM `access` WHERE `session` = ? order by id DESC limit 1";
+        query(sql, session, (callback) => {
             if (callback.error) {
                 reject(callback.error);
             }
@@ -94,41 +92,41 @@ function access(session) {
 }
 
 function addMessage(sendFrom, id_room, text) {
-    return new Promise(function (resolve, reject) {
-        var sql = "CALL `addMessages` (?,?,?)";
-        query(sql, [sendFrom, id_room, text], function (callback) {
+    return new Promise((resolve, reject) => {
+        const sql = "CALL `addMessages` (?,?,?)";
+        query(sql, [sendFrom, id_room, text], (callback) => {
             if (callback.rows) resolve(callback.rows[0]);
             if (callback.error) reject(callback.error);
         })
     });
-};
+}
 
 
 function addImage(room, sendFrom, path) {
-    return new Promise(function (resolve, reject) {
-        var sql = "CALL `addImage` (?,?,?)"
-        query(sql, [room, path, sendFrom], function (callback) {
+    return new Promise((resolve, reject) => {
+        const sql = "CALL `addImage` (?,?,?)";
+        query(sql, [room, path, sendFrom], (callback) => {
             if (callback.rows) resolve(callback.rows[0]);
             if (callback.error) reject(callback.error);
         })
     });
-};
+}
 
 function loadRoom(login) {
-    return new Promise(function (resolve, reject) {
-        var sql = 'CALL `showRoom`(?);';
-        query(sql, login, function (callback) {
-            if (callback.rows) resolve(callback.rows[0]);
-            if (callback.error) reject(callback.error);
-        });
-    });
-};
+    return new Promise((resolve, reject) => {
+            const sql = 'CALL `showRoom`(?);';
+            query(sql, login, (callback) => {
+                if (callback.rows) resolve(callback.rows[0]);
+                if (callback.error) reject(callback.error);
+            });
+        }
+    )
+}
 
 function loadUsers(user) {
-    return new Promise(function (resolve, reject) {
-        var sql = 'SELECT `login` FROM `users` WHERE `login` != ?';
-        query(sql, user, function (callback) {
-
+    return new Promise((resolve, reject) => {
+        const sql = 'SELECT `login` FROM `users` WHERE `login` != ?';
+        query(sql, user, (callback) => {
             if (callback.rows) resolve(callback.rows);
             if (callback.error) reject(callback.error);
         });
@@ -137,9 +135,9 @@ function loadUsers(user) {
 
 
 function loadMessage(room, limit) {
-    return new Promise(function (resolve, reject) {
-        var sql = "CALL `loadMessage` (?,?)";
-        query(sql, [room, limit], function (callback) {
+    return new Promise((resolve, reject) => {
+        const sql = "CALL `loadMessage` (?,?)";
+        query(sql, [room, limit], (callback) => {
             if (callback.rows) resolve(callback.rows[0]);
             if (callback.error) reject(callback.error);
         });
@@ -148,9 +146,9 @@ function loadMessage(room, limit) {
 
 
 function register(login, pass, fn, ln) {
-    return new Promise(function (resolve, reject) {
-        var sql = 'SELECT `addUser`(?,?,?,?) AS `result`;';
-        query(sql, [login, hash(login, pass), fn, ln], function (callback) {
+    return new Promise((resolve, reject) => {
+        const sql = 'SELECT `addUser`(?,?,?,?) AS `result`;';
+        query(sql, [login, hash(login, pass), fn, ln], (callback) => {
             if (callback.rows) resolve(callback.rows[0].result);
             if (callback.error) reject(callback.error);
         });
@@ -159,8 +157,8 @@ function register(login, pass, fn, ln) {
 
 function addFile(room, sendFrom, path, name) {
     return new Promise(function (resolve, reject) {
-        var sql = "CALL `addFile` (?,?,?,?)"
-        query(sql, [room, path, sendFrom, name], function (callback) {
+        const sql = "CALL `addFile` (?,?,?,?)";
+        query(sql, [room, path, sendFrom, name], (callback) => {
             if (callback.rows) resolve(callback.rows[0]);
             if (callback.error) reject(callback.error);
         });
@@ -170,7 +168,7 @@ function addFile(room, sendFrom, path, name) {
 
 function getUsers(userName) {
     return new Promise(function (resolve, reject) {
-        var sql = 'CALL `getUsers`(?)';
+        const sql = 'CALL `getUsers`(?)';
         query(sql, [userName], function (callback) {
             if (callback.rows) resolve(callback.rows[0]);
             if (callback.error) reject(callback.error);
@@ -180,27 +178,28 @@ function getUsers(userName) {
 
 function addConversation(users, name) {
     return new Promise(function (resolve, reject) {
-        var sql = "CALL `addConversation` (?,?)";
-        var t = 0;
-        for (var i = 0; i < users.length; i++) {
+        const sql = "CALL `addConversation` (?,?)";
+        let t = 0;
+        for (let i = 0; i < users.length; i++) {
             query(sql, [name, users[i]], function (callback) {
                 if (callback.error) reject(callback.error);
                 t++;
-                if (t == users.length) resolve('Done');
+                if (t === users.length) resolve('Done');
             });
         }
     })
 }
 
 function deleteMessage(id, room) {
-    return new Promise(function (resolve, reject) {
-        var sql = 'DELETE FROM `messages` WHERE `id`=? AND `id_room`=?';
-        query(sql, [id, room], function (callback) {
+    return new Promise((resolve, reject) => {
+        const sql = 'DELETE FROM `messages` WHERE `id`=? AND `id_room`=?';
+        query(sql, [id, room], (callback) => {
             if (callback.rows) resolve(callback.rows[0]);
             if (callback.error) reject(callback.error);
         });
     })
 }
+
 
 module.exports = {
     addMessage: addMessage,
@@ -208,12 +207,13 @@ module.exports = {
     loadUsers: loadUsers,
     loadMessage: loadMessage,
     register: register,
-    addFile: addFile,
     access: access,
+    addFile: addFile,
     addAccess: addAccess,
     addImage: addImage,
     getUsers: getUsers,
     deleteMessage: deleteMessage,
     addConversation: addConversation,
-    authorization: authorization
-}
+    authorization: authorization,
+    query: query
+};
