@@ -12,9 +12,9 @@ const login = require('../routes/login'),
     download = require('image-downloader');
 
 
-module.exports = (server) => {
+module.exports = (server, SSLserver) => {
 
-    let io = require('socket.io')(server),
+    let io = require('socket.io').listen(server).listen(SSLserver),
         form = new multiparty.Form();
 
     io.on('connection', (socket) => {

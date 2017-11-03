@@ -14,16 +14,17 @@ const
     options = {
         key: fs.readFileSync('./privkey.pem'),
         cert: fs.readFileSync('./fullchain.pem')
-    },
-    SSLport = normalizePort(host.SSLport),
+    };
+let    SSLport = normalizePort(host.SSLport),
     SSLserver = https.createServer(options,app);
+
+httpServer.listen(port);
+SSLserver.listen(SSLport);
+
 
 require('../middleware/socketServer')(httpServer, SSLserver);
 require('../middleware/dbWare');
 
-
-httpServer.listen(port);
-SSLserver.listen(SSLport);
 
 
 function normalizePort(val) {

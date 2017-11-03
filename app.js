@@ -44,7 +44,11 @@ app.use(function (req, res, next) {
 // error handler  
 app.use(function (err, req, res, next) {
     log("INFO", "лезут куда не поподя", {error: err, url: req.url});
-    console.log(err);
+    res.locals.message = err.message;
+res.locals.error = req.app.get('env') === 'development' ? err :{};
+	res.status(err.status || 500);
+	res.render('error');
+    //console.log(err);
     //res.redirect('./');
 });
 
