@@ -11,8 +11,8 @@ const login = require('../routes/login'),
     sha512 = require('js-sha512'),
     download = require('image-downloader');
 
-module.exports = function (httpServer/*, SSLserver*/) {
-    var io = require('socket.io').listen(httpServer)/*.listen(SSLserver)*/,
+module.exports = function (httpServer, SSLserver) {
+    var io = require('socket.io').listen(httpServer).listen(SSLserver),
         form = new multiparty.Form();
 
     io.on('connection', function (socket) {
