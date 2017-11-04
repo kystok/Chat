@@ -1,26 +1,37 @@
 describe("Создание диалога", function() {
 
-    let USER = "testEGOR2",
-        USER_SYMB = "[~#&];,:2";
-    users = [USER, USER_SYMB],
+    let rand = new Date().getMilliseconds(),
+        USER = "testEGOR2" + rand,
+        USER_SYMB = "[~#&];,:2" + rand,
+        users = [USER, USER_SYMB],
         name = "test",
         room1 = room2 = from = null;
 
-    var from, room1,
-        room2;
+
+    //Регистрация пользователя и подписка на сервере
     before((done) => {
-        var fn = ln = lg = ps = USER;
-    _reg(fn, ln, lg, ps, function(callback) {
-        fn = ln = lg = ps = USER_SYMB;
-        _reg(fn, ln, lg, ps, function(callback) {
-            _login(USER, USER, function(callback) {
-                from = callback.name;
-                done();
+        _reg(USER, USER, USER, USER, function(callback) {
+            _reg(USER_SYMB, USER_SYMB, USER_SYMB, USER_SYMB, function(callback) {
+                _login(USER, USER, function(callback) {
+                    from = callback.name;
+                    done();
+                });
             });
         });
     });
-});
 
+    //Подчищаем тестовую инфу
+    after((done) => {
+    	_delUsr(USER, function(callback) {
+    		_delUsr(USER_SYMB, function(callback) {
+    			_delConv(room1, function(callback) {
+    				_delConv(room2, function(callback) {
+    					done();
+    				});
+    			});
+    		});
+    	});
+    });    
 
     it("с самим собой", function(done) {
         _addConversation(USER, name, from, function(result) {
@@ -66,45 +77,6 @@ describe("Создание диалога", function() {
                 assert.equal(result.result, false);
                 done();
             } catch (e) { done(e) };
-        });
-    });
-
-    describe("Очистка", function() {
-
-        it("тестового пользователя", function(done) {
-            _delUsr(USER, function(callback) {
-                try {
-                    assert.equal(callback, true, callback.info);
-                    done();
-                } catch (e) { done(e) };
-            });
-        });
-
-        it("спецсимвольного пользователя", function(done) {
-            _delUsr(USER_SYMB, function(callback) {
-                try {
-                    assert.equal(callback, true, callback.info);
-                    done();
-                } catch (e) { done(e) };
-            });
-        });
-
-        it("тестового диалога #1", function(done) {
-            _delConv(room1, function(callback) {
-                try {
-                    assert.equal(callback, true, callback.info);
-                    done();
-                } catch (e) { done(e) };
-            });
-        });
-
-        it("тестового диалога #2", function(done) {
-            _delConv(room2, function(callback) {
-                try {
-                    assert.equal(callback, true, callback.info);
-                    done();
-                } catch (e) { done(e) };
-            });
         });
     });
 });

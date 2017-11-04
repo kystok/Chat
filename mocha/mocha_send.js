@@ -2,28 +2,36 @@ describe("Сообщения", () => {
 
     let text = "test text",
     url = "https://pp.userapi.com/c630517/v630517926/38563/sNW_e9jBjjA.jpg",
-    name = "testMessages",
-    USER = "testEGOR3",
-    USER_SYMB = "[~#&];,:3",
-    from,
-    room;
+    rand = new Date().getMilliseconds();
+    name = "testMessages" + rand,
+    USER = "testEGOR3" + rand,
+    USER_SYMB = "[~#&];,:3" + rand,
+    from = room = 0;
 
 
-before((done) => {
-    var fn = ln = lg = ps = USER;
-    _reg(fn, ln, lg, ps, function(callback) {
-        fn = ln = lg = ps = USER_SYMB;
-        _reg(fn, ln, lg, ps, function(callback) {
-            _login(USER, USER, function(callback) {
-                from = callback.name;
-                _addConversation(USER, name, callback.name, function(result) {
-                    room = result.id;
-                    done();
+    before((done) => {
+        _reg(USER, USER, USER, USER, function(callback) {
+            _reg(USER_SYMB, USER_SYMB, USER_SYMB, USER_SYMB, function(callback) {
+                _login(USER, USER, function(callback) {
+                    from = callback.name;
+                    _addConversation(USER, name, callback.name, function(result) {
+                        room = result.id;
+                        done();
+                    });
                 });
             });
         });
     });
-});
+
+    after((done) => {
+        _delUsr(USER, function(callback) {
+            _delUsr(USER_SYMB, function(callback) {
+                _delConv(room, function(callback) {
+                    done();
+                });
+            });
+        });
+    });  
 
 
 describe("Отправка сообщений", function() {
@@ -159,65 +167,35 @@ describe("Отправка сообщений", function() {
     });
 });
 
-describe("Загрузка сообщений", function() {
-    let limit = 20;
+    describe("Загрузка сообщений", function() {
+        let limit = 20;
 
-    it("из тестовой комнаты", function(done) {
-        loadMessages(room, limit, function(data) {
-            try {
-                assert(data.result != false)
-                done();
-            } catch (e) { done(e) };
-        })
-    });
-
-    it("из ваакума", function(done) {
-        loadMessages('', limit, function(data) {
-            try {
-                assert(data.result == false)
-                done();
-            } catch (e) { done(e) };
-        })
-    });
-
-    it("без указания лимита выгрузки", function(done) {
-        loadMessages(room, '', function(data) {
-            try {
-                assert(data.result == false)
-                done();
-            } catch (e) { done(e); }
-        })
-    });
-});
-
-    describe("Очистка", function() {
-
-        it("тестового пользователя", function(done) {
-            _delUsr(USER, function(callback) {
+        it("из тестовой комнаты", function(done) {
+            loadMessages(room, limit, function(data) {
                 try {
-                    assert.equal(callback, true, callback.info);
+                    assert(data.result != false)
                     done();
                 } catch (e) { done(e) };
+            })
+        });
+
+        it("из ваакума", function(done) {
+            loadMessages('', limit, function(data) {
+                try {
+                    assert(data.result == false)
+                    done();
+                } catch (e) { done(e) };
+            })
+        });
+
+        it("без указания лимита выгрузки", function(done) {
+            loadMessages(room, '', function(data) {
+                try {
+                    assert(data.result == false)
+                    done();
+                } catch (e) { done(e); }
+            })
         });
     });
 
-    it("спецсимвольного пользователя", function(done) {
-        _delUsr(USER_SYMB, function(callback) {
-            try {
-                assert.equal(callback, true, callback.info);
-                done();
-            } catch (e) { done(e) };
-        });
-    });
-
-    it("тестового диалога", function(done) {
-        _delConv(room, function(callback) {
-            try {
-                assert.equal(callback, true, callback.info);
-                done();
-            } catch (e) { done(e) };
-        });
-    });
-
-});
 });

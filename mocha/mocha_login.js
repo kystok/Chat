@@ -1,17 +1,24 @@
 describe("Авторизация", function() {
 
-    let USER = "testEGOR1";
-    let USER_SYMB = "[~#&];,:1";
+    let rand = new Date().getMilliseconds(),
+        USER = "testEGOR1" + rand,
+        USER_SYMB = "[~#&];,:1" + rand;
 
     before((done) => {
-        var fn = ln = lg = ps = USER;
-    _reg(fn, ln, lg, ps, function(callback) {
-        fn = ln = lg = ps = USER_SYMB;
-        _reg(fn, ln, lg, ps, function(callback) {
-            done();
+        _reg(USER, USER, USER, USER, function(callback) {
+            _reg(USER_SYMB, USER_SYMB, USER_SYMB, USER_SYMB, function(callback) {
+                done();
+            });
         });
     });
-});
+
+    after((done) => {
+        _delUsr(USER, function(callback) {
+            _delUsr(USER_SYMB, function(callback) {
+                done();
+            });
+        });
+    });  
 
     it("созданного пользователя", function(done) {
         _login(USER, USER, function(callback) {
@@ -77,24 +84,4 @@ describe("Авторизация", function() {
         });
     });
 
-    describe("Очистка", function() {
-
-        it("тестового пользователя", function(done) {
-            _delUsr(USER, function(callback) {
-                try {
-                    assert.equal(callback, true, callback.info);
-                    done();
-                } catch (e) { done(e) };
-            });
-        });
-
-        it("спецсимвольного пользователя", function(done) {
-            _delUsr(USER_SYMB, function(callback) {
-                try {
-                    assert.equal(callback, true, callback.info);
-                    done();
-                } catch (e) { done(e) };
-            });
-        });
-    });
 });

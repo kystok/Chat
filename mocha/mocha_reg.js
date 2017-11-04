@@ -1,7 +1,18 @@
 describe("Регистрация", function() {
 
-    let USER = "testEGOR";
-    let USER_SYMB = "[~#&];,:";
+    let rand = new Date().getMilliseconds(),
+        USER = "testEGOR" + rand,
+        USER_SYMB = "[~#&];,:" + rand;
+
+    //чистим тестовые логины
+    after((done) => {
+        _delUsr(USER, function(callback) {
+            _delUsr(USER_SYMB, function(callback) {
+                done();
+            });
+        });
+    });  
+
 
     it("нового пользователя", function(done) {
         var fn = ln = lg = ps = USER;
@@ -9,9 +20,7 @@ describe("Регистрация", function() {
             try {
                 assert.equal(callback.registration, true);
                 done();
-            } catch (e) {
-                done(e)
-            };
+            } catch (e) { done(e) };
         });
     });
 
@@ -73,28 +82,6 @@ describe("Регистрация", function() {
         });
     });
 
-    describe("Очистка", function() {
 
-        it("тестового пользователя", function(done) {
-            _delUsr(USER, function(callback) {
-                try {
-                    assert.equal(callback, true, callback.info);
-                    done();
-                } catch (e) {
-                    done(e)
-                };
-            });
-        });
 
-        it("спецсимвольного пользователя", function(done) {
-            _delUsr(USER_SYMB, function(callback) {
-                try {
-                    assert.equal(callback, true, callback.info);
-                    done();
-                } catch (e) {
-                    done(e)
-                };
-            });
-        });
-    });
 });
