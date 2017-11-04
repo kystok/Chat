@@ -8,21 +8,21 @@ var app = require('../app'),
     log = require('../middleware/logger').log;
     
 const host = require('../config.json').server;
-    /*options = {
+    options = {
         key: fs.readFileSync('./privkey.pem'),
         cert: fs.readFileSync('./fullchain.pem')
-    };*/
+    };
 
 var port = normalizePort(process.env.PORT || host.port);
-    // SSLport = normalizePort(host.SSLport);
+    SSLport = normalizePort(host.SSLport);
  
 var httpServer = app.listen(port);
-    // SSLserver = https.createServer(options,app);
+    SSLserver = https.createServer(options,app);
 
-require('../middleware/socketServer')(httpServer/*, SSLserver*/);
+require('../middleware/socketServer')(httpServer, SSLserver);
 
-/*httpServer.listen(port);
-SSLserver.listen(SSLport);*/
+httpServer.listen(port);
+SSLserver.listen(SSLport);
 
 require('../middleware/dbWare');
 
