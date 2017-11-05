@@ -74,9 +74,14 @@ function checkUser(text) {
     };
 }
 
-function isReadyForReg(data){
+function isReadyForLog(data){
     return (data.login == undefined || data.login.length < 1 || data.login.length > 20) ? false :
-        (data.pass == undefined || data.pass.length < 1 || data.pass.length > 20) ? false :
+        (data.password == undefined || data.password.length < 1 || data.password.length > 20) ? false :
+            true;
+}
+
+function isReadyForReg(data){
+    return (!isReadyForLog(data)) ? false :
             (data.firstName == undefined || data.firstName.length < 1 || data.firstName.length > 20) ? false :
                 (data.lastName == undefined || data.lastName.length < 1 || data.lastName.length > 20) ? false :
                     true;
@@ -115,16 +120,15 @@ module.exports = {
 }
 
 function message(data, callback) {
-    let r = false;
+    let name;
     (!data.message || isSpaced(data.message)) ? callback({result: false, info: "Ошибка. Пустой текст."}) :
         (!data.room) ? callback({result: false, info: "Ошибка. Не выбран диалог."}) :
             (!data.sendFrom) ? callback({result: false, info: "Ошибка. Не выбран отправитель."}) :
                 (data.message.length == 0) ? callback({result: false, info: "Ошибка. Пустое сообщение."}) :
                     (!checkUser(data.sendFrom)) ? callback({result: false, info: "Ошибка подписи отправителя. "}) :
-                        r = true;
- if(r){
-    let name = checkUser(data.sendFrom),
-        room = data.room,
+                        name = checkUser(data.sendFrom);
+    if(!name) return;
+    let room = data.room,
         backData = {},
         message = normaMessage(data.message);
 
@@ -145,14 +149,14 @@ function message(data, callback) {
                 id: result[0].idmessage
             };
             callback({result: true, backData, info: "Успешно."});
-        }).catch(error => {
-            console.log(error);
+        }).catch(error => {;
             log("DBcore", "Ошибка при добавлении сообщения", error);
             callback({ result: false, backData, info: "Server-side error"});
         });
-}}
+}
 
 function login(data, callback) {
+    (!isReadyForLog(data)) ? callback({result: false, info: "введены некорректные данные"}) :
         DB.authorization(data.login, data.password)
             .then(auth => {
                 if (auth != 1) callback({result: false, name: null, info: "wrong login/password"})
@@ -161,12 +165,13 @@ function login(data, callback) {
                     return DB.loadRoom(data.login)
                 };
             }).catch(error => {
-                log("DBcore", "Ошибка при авторизации", error);
+                log("DBcore", "Ошибка при авторизации1", error);
                 callback({result: false, name: null, info : "Server-side error"});
-            }).then(result => {callback({rooms: result.rooms, login: data.login, result: true, name: name});
-                callback({rooms: result.rooms, login: data.login, result: true, name: name});
+            }).then(result => {
+                let rooms = (isEmpty(result) || isEmpty(result.rooms)) ? [] : result.rooms;
+                callback({rooms: rooms, login: data.login, result: true, name: name});
             }).catch(error => {
-                log("DBcore", "Ошибка при авторизации", error);
+                log("DBcore", "Ошибка при авторизации2", error);
                 callback({result: false, name: null, info : "Server-side error"});
             })
 }
@@ -174,7 +179,7 @@ function login(data, callback) {
 function register(data, callback) {
     let userCookie;
     (!isReadyForReg(data)) ? callback({result: false, info: "Недопустимое количество символов"}) :
-        DB.register(data.login, data.pass, data.firstName, data.lastName)
+        DB.register(data.login, data.password, data.firstName, data.lastName)
             .then(result => {
                 if (!result) callback({result: false, info: "Пользователь уже существует"})
                 else {
@@ -199,19 +204,21 @@ function deleteMessage(data, callback) {
 }
 
 function addConversation(data, callback) {
+    let sendFrom,
+        users;
     (!data.name) ? callback({result: false, info: "Ошибка. Не выбрано название"}) :
         (!data.users) ? callback({result: false, info: "Ошибка. Не выбраны пользователи"}) :
-            (!checkUser(data.sendFrom)) ? callback({result: false, info: "Ошибка. Пользователь не подписан"}) : "";
+            (!checkUser(data.sendFrom)) ? callback({result: false, info: "Ошибка. Пользователь не подписан"}) :
+                sendFrom = checkUser(data.sendFrom);
+    if(!sendFrom) return;
 
-    let sendFrom = checkUser(data.sendFrom),
-        users;
     (typeof(data.users) == "string") ? users = data.users.split(",") : users = data.users;
     DB.addConversation(users, data.name)
         .then(result => {
             return DB.loadRoom(sendFrom)
         }).catch(error => {
             callback({result: false, info: "Server-side error"});
-            log("DBcore", "Ошибка при добавлении нового диалога", [users, data.name, error]);
+            log("DBcore", "Ошибка при добавлении нового диалога", error);
         }).then(result => {
             callback({result: true, id: result.rooms.id})
         }).catch(error => {

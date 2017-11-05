@@ -1,5 +1,3 @@
-
-
 const LOGIN = require('../routes/login'),
     REG = require('../routes/register'),
     CHAT = require('./CHATcore');
