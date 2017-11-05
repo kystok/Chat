@@ -1,10 +1,7 @@
 node_modules/
-public/files/
+
+public/
+files/
+
 public/images/
-<<<<<<< HEAD
-bin/*.pem
-https
-log
-*.swp
-=======
->>>>>>> 78396fa8b72c3450690ec4fd59ab0dbef00f730e
+

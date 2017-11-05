@@ -24,25 +24,18 @@ function query(sql, params, callback) {
         });
     } catch (e) {
         log("DBcore", "MYSQL Connection failure", e);
+        callback(e);
     };
 };
 
 function authorization(login, password) {
     return new Promise(function (resolve, reject) {
-        (login.length > 20) ? reject("Login is too big.") : "";
         var sql = 'SELECT `authUsers`(?, ?) AS `result`;';
         query(sql, [login, hash(login, password)], function (callback) {
-            if (callback.error) {
-                log("DBcore", "auth error", callback.error);
-                reject(callback.error);
-            };
             try {
-                if (callback.rows[0].result == 1) {
-                    console.log(callback.rows[0])
-                    resolve(true);
-                }
-            } catch (e) {};
-            reject("wrong login/password");
+                (callback.error) ? reject(callback.error) : resolve(callback.rows[0].result);
+            } catch (e) { reject(e) };
+
         });
     });
 };

@@ -54,7 +54,7 @@ module.exports = function (httpServer, SSLserver) {
                     socket.emit('users', {rows: result});
                 })
                 .catch(error => {
-                    log("WARN", "Ошибка при загрузке юзеров", error)
+                    log("DBcore", "Ошибка при загрузке юзеров", error)
                 });
         });
 
@@ -71,38 +71,40 @@ module.exports = function (httpServer, SSLserver) {
         });
 
         socket.on('uploadFile', function (data, callback) {
-            var username = checkUser(data.sendFrom);
-            var d = {}
+            let username = checkUser(data.sendFrom),
+                message = {};
             db.addFile(data.room, username, data.path.substring(data.path.indexOf("/")), data.name)
                 .then(result => {
-                    var path = data.path.substring(data.path.indexOf("/"));
-                    var text = data.name;
-                    var id = result[0].id;
-                    var date = result[0].date;
-                    d.file = {path, text, sendFrom: username, id, date}
-                    socket.broadcast.to(data.room).emit('NEW', d);
-                    callback({path, text, username, id, date});
+                    let path = data.path.substring(data.path.indexOf("/")),
+                        text = data.name,
+                        id = result[0].id,
+                        date = result[0].date;
+                    message.file = {path, text, sendFrom: username, id, date};
+                    socket.broadcast.to(data.room).emit('NEW', message);
+                    callback({result : true, path, text, username, id, date});
                 })
                 .catch(error => {
-                    log("INFO", "Ошибка при добавлении файла в БД", error);
+                    log("DBcore", "Ошибка при добавлении файла в БД", error);
+                    callback({result : false, error : error});
                 });
         });
 
         socket.on('changeRoom', function (data, callback) {
-            if (!data.room) callback({result: false, rows: false, info: "Ошибка. Не выбрана комната"})
-            if (!data.limit) callback({result: false, rows: false, info: "Ошибка. Не выбран лимит"})
+             (!data.room) ? callback({result: false, rows: false, info: "Ошибка. Не выбрана комната"}) :
+                 (!data.limit) ? callback({result: false, rows: false, info: "Ошибка. Не выбран лимит"}) : "";
             socket.join(data.room);
             db.loadMessage(data.room, data.limit)
                 .then(result => {
-                    if (result)
-                        callback({result: true, rows: result, info: "История загружена успешно."})
-                })
-                .catch(error => {
-                    callback({result: false, rows: false, info: "Ошибка. Что-то пошло не так"})
-                    log("INFO", "Ошибка при загрузке сообщений", error);
+                    (result) ? callback({result: true, rows: result, info: "История загружена успешно."}) :
+                        callback({result: false, rows: false, info: "Ошибка. Что-то пошло не так"});
+                }).catch(error => {
+                    callback({result: false, rows: false, info: "Ошибка. Что-то пошло не так"});
+                    log("DBcore", "Ошибка при загрузке сообщений", error);
                 });
         });
 
+
+        //трансопрт. Разделил что бы в дальнейшем можно было просто поменять траспорт. Лучше в отдлеьный файл кинуть
         socket.on('loadRoom', function (login, callback) {
             db.loadRoom(checkUser(login))
                 .then(result => {
@@ -111,108 +113,70 @@ module.exports = function (httpServer, SSLserver) {
                 })
                 .catch(error => {
                     callback({result: false, info: "Ошибка при загрузке диалогов"});
-                    log("INFO", "Ошибка при загрузке диалогов", error);
+                    log("DBcore", "Ошибка при загрузке диалогов", error);
                 })
         });
-    });   //трансопрт. Разделил что бы в дальнейшем можно было просто поменять траспорт. Лучше в отдлеьный файл кинуть
+    });
 }
 
 function normaMessage(text) {
-    var result = text,
-        col = true;
-    if (text) {
-        while (col) {
-            result = result.replace(/\u0020+/, " ");
-            result = result.replace(/\u0009+/, " ");
-            result = result.replace(/\u000A+/m, '\n');
-            if (result.match(/(&nbsp;){1,}/m) == null && result.match(/(<br>){1,}/m) == null) {
-                col = false;
-            }
-        }
-        return result.replace(/\xa0/gim, ' ').replace(/([\u0020]*$)/gim, '').replace(/(^[\u0020]+)/gim, '');
-    } else {
-        return text;
-    }
+    return text
+        .replace(/\u0020+/, " ")
+        .replace(/\u0009+/, " ")
+        .replace(/\u000A+/m, '\n')
+        .replace(/\xa0/gim, ' ')
+        .replace(/([\u0020]*$)/gim, '')
+        .replace(/(^[\u0020]+)/gim, '');
 }
 
-function downloadImage(url1, type, sendFrom, room) {
+function downloadImage(url, type, sendFrom, room) {
     return new Promise(function (resolve, reject) {
-        var t = Date.parse(new Date) + new Date().getMilliseconds(),
-            name = sha512(url1 + sha512(t + "")),
+        let t = Date.parse(new Date) + new Date().getMilliseconds(),
+            name = sha512(url + sha512(t + "")),
             pathh = `/images/${name}.${type}`,
             options = {
-                url: url1,
-                dest: path.join(__dirname, "../public" + pathh)
+                url: url,
+                dest: path.join(__dirname, "../public/" + pathh )
             };
+
         download.image(options)
             .then(({filename, image}) => {
-                db.addImage(room, sendFrom, pathh)
-                    .then(result => {
-                        var id_mes = result[0].id_message;
-                        var date = result[0].date;
-                        resolve({id_mes, date, pathh});
-                    })
-                    .catch(err => {
-                        log("WARN", "Ошибка при загрузки изображения в БД", err)
-                    })
-            })
-            .catch((err) => {
-                log("INFO", "Ошибка при загрузке изображения", err);
+                return db.addImage(room, sendFrom, pathh)
+            }).catch((err) => {
+                log("image-downloader", "Ошибка при загрузке изображения", err);
                 reject(false);
-            })
-    })
+            }).then(result => {
+                let id_mes = result[0].id_message,
+                    date = result[0].date;
+                resolve({id_mes, date, pathh})
+            }).catch((err) => {
+                log("DBcore", "Ошибка при загрузе изображения", err);
+                reject(false);
+            });
+    });
 }
 
 function checkURL(room, message, sendFrom) {
     return new Promise(function (resolve, reject) {
-        var mes = message,
-            res = true,
-            ret = {},
-            ret_array = [],
-            i = 0,
-            url = null;
-        while (res) {
-            try {
-                var t = mes.match(/((http(s)?)|(www\.))([^\.]+)\.([^\s]+(jpg|png))/);
-                if (t) {
-                    url = t[0];
-                    var type = t[7];
-                    i++;
-                } else {
-                    res = false;
-                    url = null;
-                }
+        let match = message.match(/((http(s)?)|(www\.))([^\.]+)\.([^\s]+(jpg|png))/);
+            ret = {message : message};
 
-            } catch (e) {
-                url = null;
-                res = false;
-            }
+        (!match) ? resolve(ret) : "";
 
-            mes = mes.replace(url, '');
-            if (url != null && res) {
-                downloadImage(url, type, sendFrom, room)
-                    .then(result => {
-                        ret.path = result.pathh;
-                        ret.id = result.id_mes;
-                        ret.date = result.date;
-                        ret.message = mes;
-                        ret_array.push(ret);
-                        resolve({ret});
-                    })
-                    .catch(error => {
-                        ret.message = message;
-                        reject(ret);
-                    });
-            } else {
-                ret.message = mes;
-                if (i == 0) {
-                    res = false;
-                    reject(ret);
-                }
-            }
-        }
-        ret.message = mes;
-    })
+        downloadImage(match[0], match[7], sendFrom, room)
+            .then(result => {
+                let ret = {
+                    path : result.pathh,
+                    id : result.id_mes,
+                    date : result.date,
+                    message : message
+                };
+                resolve(ret);
+            }).catch(error => {
+                log("image-downloader","Ошибка при загрузке изображения" ,error)
+                resolve(ret);
+            });
+    });
 }
 
 function handshake(username) {
@@ -220,17 +184,16 @@ function handshake(username) {
 }
 
 function checkUser(text) {
-    try {
-        var u1 = text.substring(text.indexOf(".") + 1),
-            u2 = handshake(text.substring(0, text.indexOf(".")));
-    }
-    catch (e) {
-        return false;
-    }
-    if (u1 == u2)
-        return text.substring(0, text.indexOf("."));
-    else
-        return false;
+    return (text.substring(text.indexOf(".") + 1) != handshake(text.substring(0, text.indexOf("."))) ) ? false :
+        text.substring(0, text.indexOf("."));
+}
+
+function isSpaced(message){
+    return (message.replace(/ /g,"").length < 1) ? true : false;
+}
+
+function isEmpty(data){
+    return (data == undefined || data.length < 1) ? true : false;
 }
 
 function clear_nbsp(text) {
@@ -244,114 +207,55 @@ function clear_code_32(text) {
 function accessText(text) {
     return text
         .replace(/[<>]/gim, function (i) {
-            if (i.charCodeAt(0) == 60)
-                return '&lt;'
-            else
-                return '&gt;'
+            return (i.charCodeAt(0) == 60) ? '&lt;' : '&gt;';
         })
 }
 
 function _message(data, callback) {
-    var r = false;
-    (!data.message) ? callback({result: false, info: "Ошибка. Пустой текст."}) :
+    (!data.message || isSpaced(data.message)) ? callback({result: false, info: "Ошибка. Пустой текст."}) :
         (!data.room) ? callback({result: false, info: "Ошибка. Не выбран диалог."}) :
              (!data.sendFrom) ? callback({result: false, info: "Ошибка. Не выбран отправитель."}) :
                 (data.message.length == 0) ? callback({result: false, info: "Ошибка. Пустое сообщение."}) :
-                    r = true;
+                    (!checkUser(data.sendFrom)) ? callback({result: false, info: "Ошибка подписи отправителя. "}) :"";
 
-    var name = checkUser(data.sendFrom),
+    let name = checkUser(data.sendFrom),
         room = data.room,
-        onlySpace = true,
         backData = {},
-        message = "";
-    if (!name) {
-        callback({result: false, info: "Ошибка подписи отправителя. "})
-    }
-    if (r) {
-        checkURL(room, data.message, name)
-            .then(result => {
-                var path = result.ret.path,
-                    id = result.ret.id,
-                    date = result.ret.date;
-                message = normaMessage(result.ret.message);
-                if (path != undefined) {
-                    backData.image = {
-                        id: id,
-                        sendFrom: name,
-                        img_path: path,
-                        date: date
-                    };
+        message = normaMessage(data.message);
 
-                }
-                if (message)
-                    if (message.length != 0)
-                        for (var i = 0; i < message.length; i++)
-                            if (message[i].charCodeAt() != 32) {
-                                onlySpace = false;
-                                break;
-                            }
-                if (!onlySpace) {
-                    db.addMessage(name, room, accessText(message))
-                        .then(result => {
-                            backData.message = {
-                                sendFrom: name,
-                                message: accessText(message),
-                                date: result[0].date,
-                                id: result[0].id_message
-                            };
-                            callback({result: true, backData, info: "Успешно."});
-                        })
-                        .catch(error => {
-                            callback({
-                                result: false,
-                                backData,
-                                info: "Ошибка при отправке сообщения."
-                            })
-                            log("INFO", "Ошибка при добавлении сообщения", error);
-                        })
-                } else {
-                    if (!backData.image)
-                        callback({result: false, info: "Ошибка. Пустое сообщение"})
-                    callback({result: true, backData, info: "Успешно."});
-                }
-            })
-            .catch(err => {
-                message = normaMessage(err.message);
-                if (message.length != 0)
-                    for (var i = 0; i < message.length; i++)
-                        if (message[i].charCodeAt() != 32) {
-                            onlySpace = false;
-                            break;
-                        }
-                if (onlySpace) {
-                    r = false;
-                    callback({result: false, info: "Ошибка. Пустое сообщение"})
-                }
-                if (r)
-                    db.addMessage(name, room, accessText(message))
-                        .then(result => {
-                            backData.message = {
-                                sendFrom: name,
-                                message: accessText(message),
-                                date: result[0].date,
-                                id: result[0].id_message
-                            };
-                            callback({result: true, backData, info: "Успешно."});
-                        })
-                        .catch(error => {
-                            log("INFO", "Ошибка при добавлении сообщения", error);
-                        })
-            })
-    }
+        checkURL(room, message, name)
+            .then( result => {
+                if (!isEmpty(result.path))
+                    backData.image = {
+                        id: result.id,
+                        sendFrom: name,
+                        img_path: result.path,
+                        date: result.date
+                    };
+                return db.addMessage(name, room, accessText(message))
+            }).then( result => {
+                backData.message = {
+                    sendFrom: name,
+                    message: accessText(message),
+                    date: result[0].date,
+                    id: result[0].id_message
+                };
+                callback({result: true, backData, info: "Успешно."});
+            }).catch(error => {
+                log("DBcore", "Ошибка при добавлении сообщения", error);
+                callback({ result: false, backData, info: "Ошибка при отправке сообщения."});
+            });
 }
 
 function _login(data, callback) {
     db.authorization(data.login, data.password)
         .then(auth => {
-                login.f(true, data.login);
-                login.addRooms(db.loadRoom(data.login));
-                var name = data.login + '.' + handshake(data.login)
-                callback({result: true, name: name});
+            console.log(auth.result);
+            (auth != 1) ? callback({result: false, name: null, info: "wrong login/password"} ) : "";
+            login.f(true, data.login);
+            login.addRooms(db.loadRoom(data.login));
+            var name = data.login + '.' + handshake(data.login);
+            callback({result: true, name: name});
         })
         .catch(error => {
             login.f(false, null);
@@ -411,21 +315,16 @@ function _addConversation(data, callback) {
     (!data.name) ? callback({result: false, info: "Ошибка. Не выбрано название"}) :
         (!data.users) ? callback({result: false, info: "Ошибка. Не выбраны пользователи"}) :
             (!checkUser(data.sendFrom)) ? callback({result: false, info: "Ошибка. Пользователь не подписан"}) : "";
-                    var sendFrom = checkUser(data.sendFrom),
-                        users;
-                    (typeof(data.users) == "string") ? users = data.users.split(",") : users = data.users;
-                    db.addConversation(users, data.name)
-                        .then(result => {
-                            db.loadRoom(sendFrom)
-                        .then(result => {
-                            callback(result[0]);
-                        })
-                        })
-                        .catch(error => {
-                            callback({result: false, info: "SQL error"});
-                            log("INFO", "Ошибка при добавлении нового диалога в БД", [users, data.name, error]);
-                        });
-
+    var sendFrom = checkUser(data.sendFrom),
+        users;
+    (typeof(data.users) == "string") ? users = data.users.split(",") : users = data.users;
+    db.addConversation(users, data.name)
+        .then(result => { return db.loadRoom(sendFrom) })
+        .then(result => { callback(result[0]) })
+        .catch(error => {
+            callback({result: false, info: "SQL error"});
+            log("INFO", "Ошибка при добавлении нового диалога в БД", [users, data.name, error]);
+        });
 }
 
 function _deleteUser(username, callback) {
