@@ -83,6 +83,7 @@ describe("Отправка сообщений", function() {
             message(url, room, from, function(data) {
                 try {
                     assert.notEqual(data.backData.image, undefined);
+
                     done();
                 } catch (e) { done(e) }
             });
@@ -91,7 +92,7 @@ describe("Отправка сообщений", function() {
         it("Картинка скачена", function(done) {
             message(url, room, from, function(data) {
                 try {
-                    assert.notEqual(data.backData.image.img_path, undefined);
+                    assert.notEqual(data.backData.image.imgpath, undefined);
                     done();
                 } catch (e) { done(e) };
             });

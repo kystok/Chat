@@ -4,7 +4,7 @@ var path = require('path');
 const logger = require('../middleware/logger').logger(path.basename(__filename));
 const log = require('../middleware/logger').log;
 var _auth = false;
-var db = require('../middleware/dbWare');
+var db = require('../middleware/DBcore');
 var username;
 var room = [];
 var sessions = [];

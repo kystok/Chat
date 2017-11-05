@@ -52,12 +52,12 @@ function log(type, text, info) {
     var log_path = logDir + t.getFullYear() + '_' + t.getMonth() + '_' + t.getDate() + '.log';
 
     if (type) {
-	console.log("------------");
-	console.log(res);
-	console.log("------------");
+        console.log("------------");
+        console.log(res);
+        console.log("------------");
 
-       // writeLog(res, log_path);
-       // writeLog(res, json_path);
+        // writeLog(res, log_path);
+        // writeLog(res, json_path);
     }
 
 

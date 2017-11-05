@@ -18,7 +18,8 @@ describe("Регистрация", function() {
         var fn = ln = lg = ps = USER;
         _reg(fn, ln, lg, ps, function(callback) {
             try {
-                assert.equal(callback.registration, true);
+                console.log(callback);
+                assert.equal(callback.result, true);
                 done();
             } catch (e) { done(e) };
         });
@@ -28,7 +29,7 @@ describe("Регистрация", function() {
         var fn = ln = lg = ps = USER;
         _reg(fn, ln, lg, ps, function(callback) {
             try {
-                assert.equal(callback.registration, false);
+                assert.equal(callback.result, false);
                 done();
             } catch (e) {
                 done(e)
@@ -40,7 +41,7 @@ describe("Регистрация", function() {
         var fn = ln = lg = ps = '';
         _reg(fn, ln, lg, ps, function(callback) {
             try {
-                assert.equal(callback.registration, false);
+                assert.equal(callback.result, false);
                 done();
             } catch (e) {
                 done(e)
@@ -51,7 +52,7 @@ describe("Регистрация", function() {
         var fn = ln = lg = ps;
         _reg(fn, ln, lg, ps, function(callback) {
             try {
-                assert.equal(callback.registration, false);
+                assert.equal(callback.result, false);
                 done();
             } catch (e) {
                 done(e)
@@ -62,7 +63,7 @@ describe("Регистрация", function() {
         var fn = ln = lg = ps = '                                                                               ';
         _reg(fn, ln, lg, ps, function(callback) {
             try {
-                assert.equal(callback.registration, false);
+                assert.equal(callback.result, false);
                 done();
             } catch (e) {
                 done(e)
@@ -74,7 +75,7 @@ describe("Регистрация", function() {
         var fn = ln = lg = ps = USER_SYMB;
         _reg(fn, ln, lg, ps, function(callback) {
             try {
-                assert.equal(callback.registration, true, callback.info);
+                assert.equal(callback.result, true, callback.info);
                 done();
             } catch (e) {
                 done(e)

@@ -6,7 +6,7 @@ describe("WS connection", function() {
     it("Подключение к серверу", function(done) {
         try {
             assert.equal(connect(), true);
-            done();
+            done(); 
         } catch (e) { done(e) };
     });
 });
