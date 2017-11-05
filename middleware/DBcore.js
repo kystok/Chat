@@ -14,15 +14,15 @@ function query(sql, params) {
     return new Promise((resolve, reject) => {
         try {
             POOL.getConnection(function (error, connection) {
-            connection.query(sql, params, function (error, rows) {
-                connection.release();
-                resolve({error, rows});
+                connection.query(sql, params, function (error, rows) {
+                    connection.release();
+                    resolve({error, rows});
+                });
             });
-        });
-} catch (e) {
-        resolve({error : e});
-    };
-});
+        } catch (e) {
+            resolve({error : e});
+        };
+    });
 };
 
 function hash(login, pass) {
@@ -105,7 +105,7 @@ function loadRoom(login) {
         let sql = 'CALL `showRoom`(?);';
         query(sql, login)
             .then( (callback) => {
-                (callback.error) ? reject(callback.error) : resolve(callback.rows[0][0]);
+                (callback.error) ? reject(callback.error) : resolve({result: true, rooms: callback.rows[0][0]});
         });
     });
 };

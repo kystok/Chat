@@ -15,6 +15,7 @@ describe("Сообщения", () => {
                 _login(USER, USER, function(callback) {
                     from = callback.name;
                     _addConversation(USER, name, callback.name, function(result) {
+                        console.log(result);
                         room = result.id;
                         done();
                     });

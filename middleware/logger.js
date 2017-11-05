@@ -27,6 +27,14 @@ function log(type, text, info) {
                 date: t
             };
             break;
+        case 'DBcore':
+            res.INFO = {
+                from: path,
+                text,
+                info: info,
+                date: t
+            };
+            break;
         case 'INFO':
             res.INFO = {
                 from: path,
