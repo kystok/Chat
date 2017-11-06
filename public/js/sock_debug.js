@@ -5,11 +5,3 @@ if (location.protocol == "https:") {
 }
 
 var socket = io.connect(_url);
-
-function connect() {
-    return socket.connected;
-<<<<<<< HEAD
-}
-=======
-}
->>>>>>> orlov

@@ -22,11 +22,7 @@
   "server": {
     "global": "localhost",
     "local": "localhost",
-<<<<<<< HEAD
     "port":"3000",
-=======
-    "port": "3000",
->>>>>>> orlov
     "SSLport":"3001"
   }
 }

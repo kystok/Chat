@@ -101,28 +101,4 @@ function writeLog(text, path) {
         } catch (e) {
         }
     });
-<<<<<<< HEAD
-
-    /* fs.appendFile(log_path, "", function (err) {
-         try {
-             var t1 = fs.readFile(log_path, 'UTF-8',
-                 function (error, data) {
-                     if (error) return "error";
-                     if (data) {
-                         te = JSON.parse(data);
-                         console.log('te', te.length)
-                     }
-                     te.push(text)
-                     fs.writeFile(log_path, JSON.stringify(te), function (err) {
-                     });
-                     return data;
-                 });
-         } catch (e) {
-             console.log('eeerrr ', e);
-         }
-     });*/
-
 }
-=======
-}
->>>>>>> orlov

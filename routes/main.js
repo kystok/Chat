@@ -95,10 +95,4 @@ module.exports = function (app) {
             log("WARN", "ошибка при парсинге формы", {error: e, request: req});
         }
     });
-<<<<<<< HEAD
-
-
 }
-=======
-};
->>>>>>> orlov
