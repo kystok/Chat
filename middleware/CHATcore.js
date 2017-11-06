@@ -37,7 +37,7 @@ function downloadImage(url, type, sendFrom, room) {
                 date = result[0].date;
                 resolve({idmes, date, pathImg})
             }).catch((err) => {
-                log("DBcore", "Ошибка при загрузе изображения", err);
+                log("WARN", "Ошибка при загрузе изображения", err);
                 reject(false);
         });
     });
@@ -150,12 +150,13 @@ function message(data, callback) {
             };
             callback({result: true, backData, info: "Успешно."});
         }).catch(error => {;
-            log("DBcore", "Ошибка при добавлении сообщения", error);
+            log("WARN", "Ошибка при добавлении сообщения", error);
             callback({ result: false, backData, info: "Server-side error"});
         });
 }
 
 function login(data, callback) {
+    let name;
     (!isReadyForLog(data)) ? callback({result: false, info: "введены некорректные данные"}) :
         DB.authorization(data.login, data.password)
             .then(auth => {
@@ -165,13 +166,13 @@ function login(data, callback) {
                     return DB.loadRoom(data.login)
                 };
             }).catch(error => {
-                log("DBcore", "Ошибка при авторизации1", error);
+                log("WARN", "Ошибка при авторизации1", error);
                 callback({result: false, name: null, info : "Server-side error"});
             }).then(result => {
                 let rooms = (isEmpty(result) || isEmpty(result.rooms)) ? [] : result.rooms;
                 callback({rooms: rooms, login: data.login, result: true, name: name});
             }).catch(error => {
-                log("DBcore", "Ошибка при авторизации2", error);
+                log("WARN", "Ошибка при авторизации2", error);
                 callback({result: false, name: null, info : "Server-side error"});
             })
 }
@@ -187,7 +188,7 @@ function register(data, callback) {
                     callback({login: data.login, result: true, username: userCookie, info: "Пользователь создан"});
                 }
             }).catch(error => {
-                log("DBcore", "Registration error", error);
+                log("WARN", "Registration error", error);
                 callback({result : false, info: "Server-side error"});
             })
 }
@@ -198,7 +199,7 @@ function deleteMessage(data, callback) {
         socket.broadcast.to(data.idroom).emit('delete', {id: data.idmessage, room: data.idroom});
     callback(result);
 }).catch(error => {
-        log("DBcore", "Ошибка при удалении сообщения", error);
+        log("WARN", "Ошибка при удалении сообщения", error);
     callback({result: false, info: "Server-side error"});
 })
 }
@@ -218,12 +219,12 @@ function addConversation(data, callback) {
             return DB.loadRoom(sendFrom)
         }).catch(error => {
             callback({result: false, info: "Server-side error"});
-            log("DBcore", "Ошибка при добавлении нового диалога", error);
+            log("WARN", "Ошибка при добавлении нового диалога", error);
         }).then(result => {
             callback({result: true, id: result.rooms.id})
         }).catch(error => {
             callback({result: false, info: "Server-side error"});
-            log("DBcore", "Ошибка при загрузке комнаты", [users, data.name, error]);
+            log("WARN", "Ошибка при загрузке комнаты", [users, data.name, error]);
         });
 }
 
@@ -232,7 +233,7 @@ function deleteUser(username, callback) {
         .then(result => {
             callback(true);
         }).catch(error => {
-            log("DBcore", "Ошибка при удалении пользователя", error);
+            log("WARN", "Ошибка при удалении пользователя", error);
             callback(false);
         })
 };
@@ -242,7 +243,7 @@ function deleteConversation(room, callback) {
         .then(result => {
             callback({result: true});
         }).catch(error => {
-            log("DBcore", "Ошибка при удалении комнаты", error);
+            log("WARN", "Ошибка при удалении комнаты", error);
             callback({result: false});
         })
 };
@@ -252,7 +253,7 @@ function getUsers(username, callback) {
         .then(result => {
             callback(result);
         }).catch(error => {
-            log("DBcore", "Ошибка при загрузке юзеров", error);
+            log("WARN", "Ошибка при загрузке юзеров", error);
             callback(error);
         });
 };
@@ -260,24 +261,24 @@ function getUsers(username, callback) {
 function changeRoom(data, callback) {
     (!data.room) ? callback({result: false, rows: false, info: "Ошибка. Не выбрана комната"}) :
         (!data.limit) ? callback({result: false, rows: false, info: "Ошибка. Не выбран лимит"}) :
-
-    DB.loadMessage(data.room, data.limit)
-        .then(result => {
-            callback({result: true, rows: result, info: "История загружена успешно."});
-        }).catch(error => {
-            callback({result: false, rows: false, info: "Ошибка. Что-то пошло не так"});
-            log("DBcore", "Ошибка при загрузке сообщений", error);
-        });
+            DB.loadMessage(data.room, data.limit)
+                .then(result => {
+                    callback({result: true, rows: result, info: "История загружена успешно."});
+                }).catch(error => {
+                    callback({result: false, rows: false, info: "Ошибка. Что-то пошло не так"});
+                    log("WARN", "Ошибка при загрузке сообщений", error);
+                });
 }
 
 function loadRoom(login, callback) {
-    DB.loadRoom(checkUser(login))
-        .then(result => {
-           callback({result: true, room: result});
-        }).catch(error => {
-            callback({result: false, info: "Ошибка при загрузке диалогов"});
-            log("DBcore", "Ошибка при загрузке диалогов", error);
-        })
+    (!checkUser(login)) ? callback({result: false, info: "Ошибка подписи при загрузке диалогов"}) :
+        DB.loadRoom(checkUser(login))
+            .then(result => {
+                callback({result: true, room: result});
+            }).catch(error => {
+                callback({result: false, info: "Ошибка при загрузке диалогов"});
+                log("WARN", "Ошибка при загрузке диалогов", error);
+            })
 }
 
 

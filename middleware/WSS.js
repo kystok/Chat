@@ -53,7 +53,6 @@ module.exports = function (httpServer, SSLserver) {
             CHAT.getUsers(username, function (result) {
                 socket.emit('users', {rows: result});
             });
-
         });
 
         socket.on('deleteUser', function (username, callback) {
