@@ -1,0 +1,53 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+
+    <script src="../js/socket.io.js"></script>
+    <script src="../js/sock_debug.js"></script>
+    <script src="../js/sock.js"></script>
+    <script src="../js/register.js"></script>
+    <script src="../js/client.js"></script>
+    <script src="../js/login.js"></script>
+
+    <!-- подключаем стили Mocha, для отображения результатов -->
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/mocha/2.1.0/mocha.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mocha/2.1.0/mocha.css">
+    <!-- подключаем библиотеку Mocha -->
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/mocha/2.1.0/mocha.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mocha/2.1.0/mocha.js"></script>
+    <!-- настраиваем Mocha: предстоит BDD-тестирование -->
+    <script>
+
+    </script>
+
+    <!-- подключаем chai -->
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/chai/2.0.0/chai.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/chai/2.0.0/chai.js"></script>
+    <!-- в chai есть много всего, выносим assert в глобальную область -->
+
+</head>
+
+<body>
+
+
+<!-- в этом скрипте находятся спеки -->
+<script src="./mocha_connection.js"></script>
+<script src="./mocha_reg.js"></script>
+<script src="./mocha_login.js"></script>
+<script src="./mocha_dialogs.js"></script>
+<script src="./mocha_send.js"></script>
+
+
+<!-- в элементе с id="mocha" будут результаты тестов -->
+<div id="mocha"></div>
+
+<!-- запустить тесты! -->
+<script>
+    mocha.run();
+</script>
+</body>
+
+</html>

@@ -1,7 +1,4 @@
-bin/*.pem
 node_modules/
-<<<<<<< HEAD
-=======
 public/files/
 public/images/
 bin/*.pem
@@ -9,4 +6,4 @@ config.json
 log/json/*
 log/log/*
 .idea
->>>>>>> orlov
+

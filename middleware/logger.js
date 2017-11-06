@@ -27,6 +27,14 @@ function log(type, text, info) {
                 date: t
             };
             break;
+        case 'DBcore':
+            res.INFO = {
+                from: path,
+                text,
+                info: info,
+                date: t
+            };
+            break;
         case 'INFO':
             res.INFO = {
                 from: path,
@@ -52,12 +60,12 @@ function log(type, text, info) {
         log_path = logDir + t.getFullYear() + '_' + t.getMonth() + '_' + t.getDate() + '.log';
 
     if (type) {
-	console.log("------------");
-	console.log(res);
-	console.log("------------");
+        console.log("------------");
+        console.log(res);
+        console.log("------------");
 
-       // writeLog(res, log_path);
-       // writeLog(res, json_path);
+        // writeLog(res, log_path);
+        // writeLog(res, json_path);
     }
 }
 
