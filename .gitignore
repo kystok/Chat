@@ -6,4 +6,5 @@ config.json
 log/json/*
 log/log/*
 .idea
+*.swp
 

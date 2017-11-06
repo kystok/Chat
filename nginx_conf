@@ -1,36 +1,30 @@
+server {
+  charset utf-8;
 
+  listen 80;
+  listen [::]:80;
+  client_max_body_size 100m;
+  listen 443 ssl;
+      ssl_certificate /etc/key.pem;
+      ssl_certificate_key /etc/cert.pem;
+        include /etc/options-ssl-nginx.conf;
 
+  root /var/www/chat.domain.ru/;
+  index index.php index.html index.htm;
+  server_name  chat.domain.ru;
 
-
-//................
-
-location /chat {
-
-  if ($uri !~ "(\.html|\/)$") {
-      return    301    "$uri/";
+  location / {
+    if ($scheme = "https") { proxy_pass https://localhost:3001; }
+        if ($scheme = "http") { proxy_pass http://localhost:3000; }
   }
 
+  location /public/ {
+    try_files $uri =404;
   }
 
-
-  location /chat/ {
-
-  proxy_pass http://localhost:3000;
-
+    location /mocha/ {
+    try_files $uri $uri/index.html  =404;
   }
-
-  location /chat/local {
-  if ($uri !~ "(\.html|\/)$") {
-      return    301    "$uri/";
-  }
-
-  }
-
-  location /chat/local/ {
-
-  proxy_pass http://localhost:3000/;
-
-  }
+}
 
 
-  //.................
