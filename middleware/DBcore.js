@@ -15,17 +15,13 @@ const MYSQL = require('mysql'),
 
 function query(sql, params) {
     return new Promise((resolve, reject) => {
-        try {
             POOL.getConnection(function (error, connection) {
-                connection.query(sql, params, function (error, rows) {
-                    connection.release();
-                    resolve({error, rows});
+                (error) ? resolve({error : error}) :
+                    connection.query(sql, params, function (error, rows) {
+                        connection.release();
+                        resolve({error, rows});
                 });
-            });
-        } catch (e) {
-            log("ERROR", "DB is not available!", e.message)
-            resolve({error : e});
-        };
+            })
     });
 };
 
@@ -50,8 +46,7 @@ module.exports = {
     authorization: authorization,
     deleteUser : deleteUser,
     deleteConversation: deleteConversation
-}
-
+};
 
 function authorization(login, password) {
     return new Promise(function (resolve, reject) {
