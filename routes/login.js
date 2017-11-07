@@ -1,13 +1,10 @@
-var express = require('express');
-var router = express.Router();
-var path = require('path');
-const logger = require('../middleware/logger').logger(path.basename(__filename));
-const log = require('../middleware/logger').log;
-var _auth = false;
-var db = require('../middleware/DBcore');
-var username;
-var room = [];
-var sessions = [];
+let express = require('express'),
+    router = express.Router(),
+    path = require('path'),
+    _auth = false,
+    db = require('../middleware/DBcore'),
+    room = sessions = [],
+    username;
 
 
 router.get('/', function(req, res, next) {

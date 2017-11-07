@@ -1,11 +1,10 @@
-var express = require('express');
-var router = express.Router();
-var _auth = false;
-var room = [];
-var path = require('path');
-const logger = require('../middleware/logger').logger(path.basename(__filename));
-const log = require('../middleware/logger').log;
-var username;
+let express = require('express'),
+    router = express.Router(),
+    _auth = false,
+    room = [],
+    path = require('path'),
+    log = require('../middleware/logger').log,
+    username;
 
 router.get('/', function(req, res, next) {
     //log("TRACE", "начальное", );

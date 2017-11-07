@@ -6,27 +6,34 @@ let date = new Date(),
     log_path = logDir + date.getFullYear() + '_' + date.getMonth() + '_' + date.getDate() + '.log';
 
 module.exports = {
-    log: log,
-    logger: logger
+    log: log
 };
 
-function log(type, text, info) {
-    info = (typeof(info)==="object") ? JSON.stringify(info) : info;
+function log(type, info, error) {
 
     let res = {
         type : type,
-        error : text,
+        info : info,
         date : date,
-        StackTrace : info
+        stackTrace : error.stack
     };
 
     switch (type) {
         case 'WARN':
-            chatops.notify(res)
+            console.log(res);
             break;
 
         case 'ERROR':
-            chatops.notify(res).then(result => {process.exit(1)})
+            console.log(res);
+            chatops.notify(res);
+            break;
+
+        case 'CRITICAL ERROR':
+            console.log(res);
+            chatops.notify(res)
+                .then((result) => {
+                    process.exit(1)
+                });
             break;
 
         case 'INFO':
@@ -40,5 +47,6 @@ function log(type, text, info) {
 }
 
 process.on('uncaughtException', function(err) {
-    log('ERROR','uncaughtException',err)
+    console.log(err);
+    log('CRITICAL ERROR','uncaughtException',err)
 })

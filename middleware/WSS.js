@@ -3,7 +3,7 @@ const LOGIN = require('../routes/login'),
     CHAT = require('./CHATcore');
 
 module.exports = function (httpServer, SSLserver) {
-    let io = require('socket.io').listen(httpServer).listen(SSLserver);
+    let io = require('socket.io').listen(httpServer)/*.listen(SSLserver)*/;
 
     io.on('connection', function (socket) {
 

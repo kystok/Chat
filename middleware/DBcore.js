@@ -2,7 +2,7 @@ const MYSQL = require('mysql'),
     SHA512 = require('js-sha512'),
     CONFIG = require('../config'),
     path = require('path'),
-    logger = require('./logger').logger(path.basename(__filename)),
+    logger = require('./logger'),
     log = require('./logger').log,
     OPTIONS = {
         host: CONFIG.db.clients.host,

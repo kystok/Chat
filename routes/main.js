@@ -1,18 +1,15 @@
-const path = require('path'),
-    logger = require('../middleware/logger').logger(path.basename(__filename)),
-    log = require('../middleware/logger').log;
+let path = require('path'),
+    log = require('../middleware/logger').log,
+    login = require('./login').router,
+    register = require('./register').router,
+    logout = require('./logout'),
+    multiparty = require('multiparty'),
+    express = require('express'),
+    router = express.Router(),
+    fs = require("fs"),
+    name;
 
 module.exports = function (app) {
-
-    const login = require('./login').router,
-        register = require('./register').router,
-        logout = require('./logout'),
-        multiparty = require('multiparty'),
-        express = require('express'),
-        router = express.Router(),
-        fs = require("fs");
-    let path,
-        name;
 
     app.use('/', login)
         .use('/register', register)
