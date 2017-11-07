@@ -11,10 +11,8 @@ module.exports = {
 };
 
 function log(type, text, info) {
-    let _info;
-    typeof(info)==="object" ? _info=JSON.stringify(info) : _info = info;
-/*    console.log("**",_info.message);
-    console.log("++",typeof(_info));*/
+    info = (typeof(info)==="object") ? JSON.stringify(info) : info;
+
     let res = {
         type : type,
         error : text,
@@ -24,9 +22,11 @@ function log(type, text, info) {
 
     switch (type) {
         case 'WARN':
+            chatops.notify(res)
             break;
 
         case 'ERROR':
+            chatops.notify(res).then(result => {process.exit(1)})
             break;
 
         case 'INFO':
@@ -36,12 +36,9 @@ function log(type, text, info) {
             break;
 
         default:
-            //statements_def
     }
-
-    //chatops.notify(res);
 }
 
-function logger(_path) {
-    path = _path;
-}
+process.on('uncaughtException', function(err) {
+    log('ERROR','uncaughtException',err)
+})
