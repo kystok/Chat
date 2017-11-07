@@ -29,6 +29,10 @@ function hash(login, pass) {
     return SHA512(pass + SHA512(login));
 };
 
+function isEmpty(data){
+    return (data == undefined || data.length < 1) ? true : false;
+}
+
 
 module.exports = {
     addMessage: addMessage,
@@ -163,10 +167,11 @@ function getUsers(userName) {
 function addConversation(users, name) {
     return new Promise(function (resolve, reject) {
         let sql = "CALL `addConversation` (?,?)";
+        if(isEmpty(users) || isEmpty(name)) reject(new Error("length is undefined"));
         for (let i = 0; i < users.length; i++) {
             query(sql, [name, users[i]])
                 .then( (callback) => {
-                    (callback.error) ? reject(callback.error) : resolve({result: true});;
+                    (callback.error) ? reject(callback.error) : resolve({result: true});
                 });
         };
     });

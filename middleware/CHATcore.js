@@ -115,7 +115,8 @@ module.exports = {
     message: message,
     getUsers: getUsers,
     changeRoom: changeRoom,
-    loadRoom: loadRoom
+    loadRoom: loadRoom,
+    checkUser : checkUser
 }
 
 function message(data, callback) {
