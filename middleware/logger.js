@@ -1,25 +1,26 @@
-let date = new Date(),
-    logDir = '../log/log/',
-    jsonDir = '../log/json/',
-    chatops = require('./chatops'),
-    json_path = jsonDir + date.getFullYear() + '_' + date.getMonth() + '_' + date.getDate() + '.json',
-    log_path = logDir + date.getFullYear() + '_' + date.getMonth() + '_' + date.getDate() + '.log';
+let winston = require('winston'),
+    fs = require('fs'),
+    logDir = '../log/',
+    chatops = require('./chatops');
+
 
 module.exports = {
     log: log
 };
 
 function log(type, info, error) {
-
-    let res = {
+    let date = new Date(),
+        res = {
         type : type,
         info : info,
         date : date,
         stackTrace : error.stack
     };
+    toFile(res);
 
     switch (type) {
         case 'WARN':
+            chatops.notify(res);
             console.log(res);
             break;
 
@@ -28,25 +29,38 @@ function log(type, info, error) {
             chatops.notify(res);
             break;
 
-        case 'CRITICAL ERROR':
-            console.log(res);
-            chatops.notify(res)
-                .then((result) => {
-                    process.exit(1)
-                });
-            break;
-
         case 'INFO':
             break;
 
         case 'TRACE':
+            console.log(res);
             break;
 
         default:
     }
 }
 
-process.on('uncaughtException', function(err) {
-    console.log(err);
-    log('CRITICAL ERROR','uncaughtException',err)
-})
+function toFile(log) {
+    for(prop in log) {
+        log.prop = prop.replace(/('")/gim, '\"');
+    }
+    return new Promise((resolve, reject) => {
+        let date = new Date(),
+            json_path  = logDir + date.getDate() +"_"+ (date.getMonth()+1) +"_"+ date.getFullYear() + ".json",
+            jsonLog;
+
+        if (!fs.existsSync(json_path)) {
+            jsonLog = { "log": [] };
+            jsonLog.log.push(log);
+            fs.writeFile(json_path,JSON.stringify(jsonLog), (err) => {
+                (err) ? resolve(err) : resolve(true);
+            });
+        } else {
+            jsonLog = JSON.parse(fs.readFileSync(json_path));
+            jsonLog.log.push(log);
+            fs.writeFile(json_path,JSON.stringify(jsonLog), (err) => {
+                (err) ? resolve(err) : resolve(true);
+            });
+        }
+    });
+}

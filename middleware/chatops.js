@@ -25,7 +25,7 @@ function notify(message) {
                 'text': text
             })
         }, (error, response, body) => {
-            (!error) ? resolve(true) : console.log("Telegram request failed");
+            (!error) ? resolve(true) : reject(error);
         });
     });
 }
@@ -33,3 +33,15 @@ function notify(message) {
 module.exports = {
     notify: notify
 };
+
+process.on('uncaughtException', function(err) {
+    console.log(err);
+    notify({type: "CRITICAL ERROR", info: 'uncaughtException', stackTrace: err.stack})
+        .then(result => {
+            process.exit(1);
+        }).catch(err => {
+            console.log(error);
+            process.exit(1);
+        });
+});
+

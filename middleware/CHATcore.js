@@ -5,7 +5,6 @@ const log = require('./logger').log,
     PATH = require('path'),
     DB = require('./DBcore');
 
-
 function normaMessage(text) {
     return text
         .replace(/\u0020+/, " ")
@@ -18,8 +17,8 @@ function normaMessage(text) {
 
 function downloadImage(url, type, sendFrom, room) {
     return new Promise(function (resolve, reject) {
-        let t = Date.parse(new Date) + new Date().getMilliseconds(),
-            name = SHA512(url + SHA512(t + "")),
+        let date = Date.parse(new Date) + new Date().getMilliseconds(),
+            name = SHA512(url + SHA512(date + "")),
             pathImg = `/images/${name}.${type}`,
             options = {
                 url: url,

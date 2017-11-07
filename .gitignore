@@ -3,8 +3,7 @@ public/files/
 public/images/
 bin/*.pem
 config.json
-log/json/*
-log/log/*
+log/*
 .idea
 *.swp
 
