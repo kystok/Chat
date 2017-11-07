@@ -1,6 +1,5 @@
-const config = require('./config');
-
-var express = require('express'),
+const config = require('./config'),
+    express = require('express'),
     path = require('path'),
     favicon = require('serve-favicon'),
     cookieParser = require('cookie-parser'),
@@ -16,9 +15,9 @@ var express = require('express'),
         password: config.db.sessions.password,
         database: config.db.sessions.database,
     },
-    app = express();
-const logger = require('./middleware/logger').logger(path.basename(__filename));
-const log = require('./middleware/logger').log;
+    app = express(),
+    logger = require('./middleware/logger').logger(path.basename(__filename)),
+    log = require('./middleware/logger').log;
 
 
 app.set('views', path.join(__dirname, 'views'));
@@ -34,28 +33,22 @@ app.use(session({
     key: 'auth',
     store: new MySQLStore(options)
 }));
-var routes = require('./routes/main')(app);
+const routes = require('./routes/main')(app);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
-    var err = new Error('Not Found');
+    const err = new Error('Not Found');
     err.status = 404;
     next(err);
 });
 
-// error handler  
-/*app.use(function (err, req, res, next) {
-    log("INFO", "лезут куда не поподя", {error: err, url: req.url});
-    //res.redirect('./');
-});*/
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
     // set locals, only providing error in development
-       res.locals.message = err.message;
-       res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-       // render the error page
-       res.status(err.status || 500);
-       res.render('error');
+    res.locals.message = err.message;
+    res.locals.error = req.app.get('env') === 'development' ? err : {};
+    log("INFO", "лезут куда не поподя", req.url);
+    res.status(err.status || 500);
+    res.render('error');
 });
 
 

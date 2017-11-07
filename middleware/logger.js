@@ -11,6 +11,10 @@ module.exports = {
 };
 
 function log(type, text, info) {
+    let _info;
+    typeof(info)==="object" ? _info=JSON.stringify(info) : _info = info;
+/*    console.log("**",_info.message);
+    console.log("++",typeof(_info));*/
     let res = {
         type : type,
         error : text,
@@ -32,10 +36,10 @@ function log(type, text, info) {
             break;
 
         default:
-            // statements_def
-    };
+            //statements_def
+    }
 
-    chatops.notify(res);
+    //chatops.notify(res);
 }
 
 function logger(_path) {

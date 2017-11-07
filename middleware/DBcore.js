@@ -1,6 +1,9 @@
 const MYSQL = require('mysql'),
     SHA512 = require('js-sha512'),
     CONFIG = require('../config'),
+    path = require('path'),
+    logger = require('./logger').logger(path.basename(__filename)),
+    log = require('./logger').log,
     OPTIONS = {
         host: CONFIG.db.clients.host,
         port: CONFIG.db.clients.port,
@@ -20,6 +23,7 @@ function query(sql, params) {
                 });
             });
         } catch (e) {
+            log("ERROR", "DB is not available!", e.message)
             resolve({error : e});
         };
     });
