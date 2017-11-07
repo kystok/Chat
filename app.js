@@ -16,7 +16,6 @@ const config = require('./config'),
         database: config.db.sessions.database,
     },
     app = express(),
-    logger = require('./middleware/logger').logger(path.basename(__filename)),
     log = require('./middleware/logger').log;
 
 

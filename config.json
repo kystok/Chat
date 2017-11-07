@@ -3,7 +3,7 @@
     "clients": {
       "name": "mysql",
       "host": "localhost",
-      "port": "330e6",
+      "port": "3306",
       "user": "chat",
       "password": "chatbase",
       "database": "test"
