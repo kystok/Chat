@@ -1,9 +1,10 @@
 let assert = require('chai').assert;
 
-describe('DBcore', () => {
+describe('backend testing', () => {
 
-    const register = require('./register'),
-        authorization = require('./authorization'),
-        addConversation = require('./addConversation');
-
-});
+        const chat = require('./chat'),
+            register = require('./register'),
+            authorization = require('./authorization'),
+            addConversation = require('./addConversation');
+    }
+);
