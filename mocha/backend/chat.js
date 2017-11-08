@@ -1,9 +1,62 @@
 const CHAT = require('../../middleware/CHATcore.js'),
     assert = require('chai').assert,
     SHA512 = require('js-sha512'),
+    DB = require('../../middleware/DBcore'),
     CONFIG = require('../../config');
 describe('Chat core testing', () => {
+    function hand(username) {
+        return SHA512(username + SHA512(CONFIG.secret));
+    }
 
+
+    describe('Friend list', () => {
+        let USER1 = 'test',
+            USER2 = 'test2';
+        before((done) => {
+            DB.register(USER1, USER1, USER1, USER1)
+                .then(() => {
+                    return DB.register(USER2, USER2, USER2, USER2)
+                }).then(() => {
+                done();
+            })
+        });
+        after((done) => {
+            DB.query('DELETE FROM `friendList`' +
+                ' WHERE `user` = (select `id` from `users` where `login` = ?) ' +
+                'OR `user` = (select `id` from `users` where `login` = ?);', [USER1, USER2])
+                .then(() => {
+                    return DB.deleteUser(USER2);
+                }).then(() => {
+                return DB.deleteUser(USER1);
+            }).then(() => {
+                done()
+            }).catch((e) => {
+                done(e)
+            }).catch((e) => {
+                done(e)
+            }).catch((e) => {
+                done(e)
+            })
+
+        });
+
+        it('Добавляем друга', (done) => {
+            const data = {
+                sendFrom: USER1 + "." + hand(USER1),
+                friend: USER2
+            };
+            CHAT.addFriends(data)
+                .then(result => {
+                    assert.equal(result.result, true);
+                    console.log('Друг добавлен успешно');
+                    done();
+                })
+                .catch((err) => {
+                    done(err)
+                })
+        });
+
+    });
 
     describe('Нормализация текста', () => {
         before((done) => {
@@ -81,11 +134,8 @@ describe('Chat core testing', () => {
             done();
         });
 
-        function hand(username) {
-            return SHA512(username + SHA512(CONFIG.secret));
-        }
 
-        let text1 = "usertestblabla",
+        const text1 = "usertestblabla",
             result1 = hand(text1);
 
         it('Проверка создания подписи', (done) => {

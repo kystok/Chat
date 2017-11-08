@@ -15,6 +15,7 @@ module.exports = {
     isSpaced: isSpaced,
     isEmpty: isEmpty,
     handshake: handshake,
+    addFriends: addFriends,
 
     deleteConversation: deleteConversation,
     deleteUser: deleteUser,
@@ -27,6 +28,16 @@ module.exports = {
     changeRoom: changeRoom,
     loadRoom: loadRoom,
 };
+
+function addFriends(data) {
+    return new Promise((resolve, reject) => {
+        (!checkUser(data.sendFrom)) ? resolve({result: false, info: "Ошибка подписи."}) :
+            DB.addFriend(checkUser(data.sendFrom), data.friend)
+                .then(result => {
+                    resolve(result[0]);
+                });
+    });
+}
 
 function normaMessage(text) {
     return text
@@ -68,7 +79,7 @@ function checkURL(room, message, sendFrom) {
             message = message.replace(match[7], "");
             downloadImage(match[0], match[7])
                 .then(result => {
-                    path= result.pathImg
+                    path = result.pathImg
                     return DB.addImage(room, sendFrom, result.pathImg)
                 }).catch(error => {
                 log("image-downloader", "Ошибка при загрузке изображения", error);
@@ -98,7 +109,6 @@ function checkUser(text) {
         log("WSS error", "Подпись не удалась", e)
         return false
     }
-    ;
 }
 
 function isReadyForLog(data) {

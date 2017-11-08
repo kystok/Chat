@@ -49,6 +49,8 @@ module.exports = {
     addConversation: addConversation,
     authorization: authorization,
     deleteUser : deleteUser,
+    addFriend: addFriend,
+    query: query,
     deleteConversation: deleteConversation
 };
 
@@ -62,6 +64,15 @@ function authorization(login, password) {
     });
 };
 
+function addFriend(user, friend) {
+    return new Promise((resolve, reject)=>{
+        let sql = 'CALL `addFriendList`(?, ?)';
+        query(sql, [user,friend])
+            .then(callback=>{
+                (callback.error) ? reject(callback.error) : resolve(callback.rows[0]);
+            })
+    })
+}
 function addAccess(login, session) {
     return new Promise(function (resolve, reject) {
         let sql = "CALL `access_mod`(?, ?)";
