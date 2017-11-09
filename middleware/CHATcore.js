@@ -68,22 +68,17 @@ function checkUser(text) {
         return (text.substring(text.indexOf(".") + 1) != handshake(text.substring(0, text.indexOf("."))) ) ? false :
             text.substring(0, text.indexOf("."));
     } catch (e) {
-        log("WSS error", "Подпись не удалась", e)
+        log("INFO", "Подпись не удалась", e)
         return false
     };
 }
 
-function isReadyForLog(data){
-    return (data.login == undefined || data.login.length < 1 || data.login.length > 20) ? false :
-        (data.password == undefined || data.password.length < 1 || data.password.length > 20) ? false :
-            true;
+function createToken(data){
+    return data.login + '.' + handshake(data.login);
 }
 
-function isReadyForReg(data){
-    return (!isReadyForLog(data)) ? false :
-            (data.firstName == undefined || data.firstName.length < 1 || data.firstName.length > 20) ? false :
-                (data.lastName == undefined || data.lastName.length < 1 || data.lastName.length > 20) ? false :
-                    true;
+function isTooBig(data){
+    return (data.length > 20) ? true : false;
 }
 
 function accessText(text) {
@@ -121,11 +116,12 @@ module.exports = {
 
 function message(data, callback) {
     let name;
-    (!data.message || isSpaced(data.message)) ? callback({result: false, info: "Ошибка. Пустой текст."}) :
-        (!data.room) ? callback({result: false, info: "Ошибка. Не выбран диалог."}) :
-            (!data.sendFrom) ? callback({result: false, info: "Ошибка. Не выбран отправитель."}) :
-                (data.message.length == 0) ? callback({result: false, info: "Ошибка. Пустое сообщение."}) :
-                    (!checkUser(data.sendFrom)) ? callback({result: false, info: "Ошибка подписи отправителя. "}) :
+
+    (!data.message || isSpaced(data.message)) ? callback({success: false, info: "Ошибка. Пустой текст."}) :
+        (!data.room) ? callback({success: false, info: "Ошибка. Не выбран диалог."}) :
+            (!data.sendFrom) ? callback({success: false, info: "Ошибка. Не выбран отправитель."}) :
+                (data.message.length == 0) ? callback({success: false, info: "Ошибка. Пустое сообщение."}) :
+                    (!checkUser(data.sendFrom)) ? callback({success: false, info: "Ошибка подписи отправителя. "}) :
                         name = checkUser(data.sendFrom);
     if(!name) return;
     let room = data.room,
@@ -148,48 +144,58 @@ function message(data, callback) {
                 date: result[0].date,
                 id: result[0].idmessage
             };
-            callback({result: true, backData, info: "Успешно."});
+            callback({success: true, backData, info: "Успешно."});
         }).catch(error => {;
             log("WARN", "Ошибка при добавлении сообщения", error);
-            callback({ result: false, backData, info: "Server-side error"});
+            callback({ success: false, backData, info: "Server-side error"});
         });
 }
 
 function login(data, callback) {
-    let name;
-    (!isReadyForLog(data)) ? callback({result: false, info: "введены некорректные данные"}) :
+    let token;
+    (isEmpty(data.password)) ? callback({success: false, name: null, info: "Пустой пароль"}) :
+        (isEmpty(data.login)) ? callback({success: false, name: null, info: "Пустой логин"}) :
+            (isTooBig(data.password)) ? callback({success: false, name: null, info: "Слишком большой пароль"}) :
+                (isTooBig(data.login)) ? callback({success: false, name: null, info: "Слишком большой логин"}) :
         DB.authorization(data.login, data.password)
             .then(auth => {
-                if (auth != 1) callback({result: false, name: null, info: "wrong login/password"})
+                if (auth != 1) callback({success: false, name: null, info: "Неверный логин/пароль"})
                 else {
-                    name = data.login + '.' + handshake(data.login);
+                    token = createToken(data);
                     return DB.loadRoom(data.login)
                 };
             }).catch(error => {
                 log("WARN", "Ошибка при авторизации1", error);
-                callback({result: false, name: null, info : "Server-side error"});
+                callback({success: false, name: null, info : "Server-side error"});
             }).then(result => {
                 let rooms = (isEmpty(result) || isEmpty(result.rooms)) ? [] : result.rooms;
-                callback({rooms: rooms, login: data.login, result: true, name: name});
+                callback({rooms: rooms, login: data.login, success: true, token: token});
             }).catch(error => {
                 log("WARN", "Ошибка при авторизации2", error);
-                callback({result: false, name: null, info : "Server-side error"});
+                callback({success: false, name: null, info : "Server-side error"});
             })
 }
 
 function register(data, callback) {
-    let userCookie;
-    (!isReadyForReg(data)) ? callback({result: false, info: "Недопустимое количество символов"}) :
+    let token;
+    (isEmpty(data.password)) ? callback({success: false, name: null, info: "Пустой пароль"}) :
+        (isEmpty(data.login)) ? callback({success: false, name: null, info: "Пустой логин"}) :
+            (isEmpty(data.firstName)) ? callback({success: false, name: null, info: "Пустое имя"}) :
+                (isEmpty(data.lastName)) ? callback({success: false, name: null, info: "Пустая фамилия"}) :
+                    (isTooBig(data.password)) ? callback({success: false, name: null, info: "Слишком большой пароль"}) :
+                        (isTooBig(data.login)) ? callback({success: false, name: null, info: "Слишком большой логин"}) :
+                            (isTooBig(data.firstName)) ? callback({success: false, name: null, info: "Слишком большое имя"}) :
+                                (isTooBig(data.lastName)) ? callback({success: false, name: null, info: "Слишком большая фамилия"}) :
         DB.register(data.login, data.password, data.firstName, data.lastName)
             .then(result => {
-                if (!result) callback({result: false, info: "Пользователь уже существует"})
+                if (!result) callback({success: false, info: "Пользователь уже существует"})
                 else {
-                    userCookie = data.login + '.' + handshake(data.login);
-                    callback({login: data.login, result: true, username: userCookie, info: "Пользователь создан"});
+                    token = createToken(data);
+                    callback({login: data.login, success: true, token: token, info: "Пользователь создан"});
                 }
             }).catch(error => {
                 log("WARN", "Registration error", error);
-                callback({result : false, info: "Server-side error"});
+                callback({success : false, info: "Server-side error"});
             })
 }
 
@@ -200,30 +206,30 @@ function deleteMessage(data, callback) {
     callback(result);
 }).catch(error => {
         log("WARN", "Ошибка при удалении сообщения", error);
-    callback({result: false, info: "Server-side error"});
+        callback({success: false, info: "Server-side error"});
 })
 }
 
 function addConversation(data, callback) {
-    let sendFrom,
+    let login,
         users;
-    (!data.name) ? callback({result: false, info: "Ошибка. Не выбрано название"}) :
-        (!data.users) ? callback({result: false, info: "Ошибка. Не выбраны пользователи"}) :
-            (!checkUser(data.sendFrom)) ? callback({result: false, info: "Ошибка. Пользователь не подписан"}) :
-                sendFrom = checkUser(data.sendFrom);
-    if(!sendFrom) return;
+    (!data.name) ? callback({success: false, info: "Не выбрано название"}) :
+        (!data.users) ? callback({success: false, info: "Не выбраны пользователи"}) :
+            (!checkUser(data.token)) ? callback({success: false, info: "Пользователь не подписан"}) :
+                login = checkUser(data.token);
+    if(!login) return;
 
     (typeof(data.users) == "string") ? users = data.users.split(",") : users = data.users;
     DB.addConversation(users, data.name)
         .then(result => {
-            return DB.loadRoom(sendFrom)
+            return DB.loadRoom(login)
         }).catch(error => {
-            callback({result: false, info: "Server-side error"});
+            callback({success: false, info: "Server-side error"});
             log("WARN", "Ошибка при добавлении нового диалога", error);
         }).then(result => {
-            callback({result: true, id: result.rooms.id})
+            callback({success: true, room_id: result.rooms.id})
         }).catch(error => {
-            callback({result: false, info: "Server-side error"});
+            callback({success: false, info: "Server-side error"});
             log("WARN", "Ошибка при загрузке комнаты", [users, data.name, error]);
         });
 }
@@ -241,10 +247,10 @@ function deleteUser(username, callback) {
 function deleteConversation(room, callback) {
     DB.deleteConversation(room)
         .then(result => {
-            callback({result: true});
+            callback({success: true});
         }).catch(error => {
             log("WARN", "Ошибка при удалении комнаты", error);
-            callback({result: false});
+            callback({success: false});
         })
 };
 
@@ -259,24 +265,24 @@ function getUsers(username, callback) {
 };
 
 function changeRoom(data, callback) {
-    (!data.room) ? callback({result: false, rows: false, info: "Ошибка. Не выбрана комната"}) :
-        (!data.limit) ? callback({result: false, rows: false, info: "Ошибка. Не выбран лимит"}) :
+    (!data.room) ? callback({success: false, rows: false, info: "Не выбрана комната"}) :
+        (!data.limit) ? callback({success: false, rows: false, info: "Не выбран лимит загрузки сообщений"}) :
             DB.loadMessage(data.room, data.limit)
                 .then(result => {
-                    callback({result: true, rows: result, info: "История загружена успешно."});
+                    callback({success: true, messages: result, info: "История загружена успешно."});
                 }).catch(error => {
-                    callback({result: false, rows: false, info: "Ошибка. Что-то пошло не так"});
+                    callback({success: false, info: "Server-side error"});
                     log("WARN", "Ошибка при загрузке сообщений", error);
                 });
 }
 
 function loadRoom(login, callback) {
-    (!checkUser(login)) ? callback({result: false, info: "Ошибка подписи при загрузке диалогов"}) :
+    (!checkUser(login)) ? callback({success: false, info: "Ошибка подписи при загрузке диалогов"}) :
         DB.loadRoom(checkUser(login))
             .then(result => {
-                callback({result: true, room: result});
+                callback({success: true, room: result});
             }).catch(error => {
-                callback({result: false, info: "Ошибка при загрузке диалогов"});
+                callback({success: false, info: "Server-side error"});
                 log("WARN", "Ошибка при загрузке диалогов", error);
             })
 }
