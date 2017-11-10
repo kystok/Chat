@@ -44,12 +44,13 @@ module.exports = {
     access: access,
     addAccess: addAccess,
     addImage: addImage,
-    getUsers: getUsers,
+    showFriends: showFriends,
     deleteMessage: deleteMessage,
     addConversation: addConversation,
     authorization: authorization,
     deleteUser : deleteUser,
     addFriend: addFriend,
+    deleteFriend: deleteFriend,
     query: query,
     deleteConversation: deleteConversation
 };
@@ -72,7 +73,17 @@ function addFriend(user, friend) {
                 (callback.error) ? reject(callback.error) : resolve(callback.rows[0]);
             })
     })
-}
+    }
+    function deleteFriend(user, friend) {
+    return new Promise((resolve, reject)=>{
+        const sql = 'CALL `deleteFriend`(?,?)';
+        query(sql, [user,friend])
+            .then(callback=>{
+                (callback.error) ? reject(callback.error) : resolve(callback.rows[0][0]);
+            })
+    })
+
+    }
 function addAccess(login, session) {
     return new Promise(function (resolve, reject) {
         let sql = "CALL `access_mod`(?, ?)";
@@ -165,9 +176,10 @@ function addFile(room, sendFrom, path, name) {
 };
 
 
-function getUsers(userName) {
+function showFriends(userName) {
+    console.log(userName)
     return new Promise(function (resolve, reject) {
-        let sql = 'CALL `getUsers`(?)';
+        let sql = 'CALL `showFriends`(?)';
         query(sql, [userName])
             .then( (callback) => {
                 (callback.error) ? reject(callback.error) : resolve(callback.rows[0]);

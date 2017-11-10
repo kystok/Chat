@@ -23,19 +23,51 @@ module.exports = {
     deleteMessage: deleteMessage,
     register: register,
     login: login,
+    showFriendList: showFriendList,
+    deleteFriend: deleteFriend,
     message: message,
-    getUsers: getUsers,
     changeRoom: changeRoom,
     loadRoom: loadRoom,
 };
 
-function addFriends(data) {
+function deleteFriend(data) {
     return new Promise((resolve, reject) => {
         (!checkUser(data.sendFrom)) ? resolve({result: false, info: "Ошибка подписи."}) :
-            DB.addFriend(checkUser(data.sendFrom), data.friend)
+            (isEmpty(data.friend)) ? resolve({result: false, info: "Ошибка входных данных."}) :
+                DB.deleteFriend(checkUser(data.sendFrom), data.friend)
+                    .then(result => {
+                        resolve(result);
+                    }).catch(() => {
+                    resolve({result: false, info: "Ошибка"})
+                })
+    })
+}
+
+function showFriendList(username) {
+    return new Promise((resolve, reject) => {
+        (!checkUser(username)) ? resolve({result: false, info: "Ошибка подписи."}) :
+            DB.showFriends(checkUser(username))
                 .then(result => {
-                    resolve(result[0]);
-                });
+                    resolve(result);
+                })
+                .catch(() => {
+                    resolve({result: false, info: "Ошибка"})
+                })
+    })
+}
+
+function addFriends(data) {
+    return new Promise((resolve, reject) => {
+        (isEmpty(data.sendFrom) || isEmpty(data.friend)) ? resolve({result: false, info: "Ошибка входных данных."}) :
+            (!checkUser(data.sendFrom)) ? resolve({result: false, info: "Ошибка подписи."}) :
+                (checkUser(data.sendFrom) === data.friend) ? resolve({
+                        result: false,
+                        info: "Ошибка добавления самого себя."
+                    }) :
+                    DB.addFriend(checkUser(data.sendFrom), data.friend)
+                        .then(result => {
+                            resolve(result[0]);
+                        });
     });
 }
 
@@ -149,7 +181,7 @@ function message(data, callback) {
     (!data.message || isSpaced(data.message)) ? callback({result: false, info: "Ошибка. Пустой текст."}) :
         (!data.room) ? callback({result: false, info: "Ошибка. Не выбран диалог."}) :
             (!data.sendFrom) ? callback({result: false, info: "Ошибка. Не выбран отправитель."}) :
-                (data.message.length == 0) ? callback({result: false, info: "Ошибка. Пустое сообщение."}) :
+                (data.message.length === 0) ? callback({result: false, info: "Ошибка. Пустое сообщение."}) :
                     (!checkUser(data.sendFrom)) ? callback({result: false, info: "Ошибка подписи отправителя. "}) :
                         name = checkUser(data.sendFrom);
     if (!name) return;
@@ -159,7 +191,6 @@ function message(data, callback) {
 
     checkURL(room, message, name)
         .then(result => {
-            console.log('***', result)
             if (!isEmpty(result.path))
                 backData.image = {
                     id: result.id, sendFrom: name,
@@ -168,7 +199,6 @@ function message(data, callback) {
                 };
             return DB.addMessage(name, room, accessText(message))
         }).then(result => {
-        console.log('---', result)
         backData.message = {
             sendFrom: name,
             message: accessText(message),
@@ -277,15 +307,6 @@ function deleteConversation(room, callback) {
     })
 };
 
-function getUsers(username, callback) {
-    DB.getUsers(checkUser(username))
-        .then(result => {
-            callback(result);
-        }).catch(error => {
-        log("WARN", "Ошибка при загрузке юзеров", error);
-        callback(error);
-    });
-};
 
 function changeRoom(data, callback) {
     (!data.room) ? callback({result: false, rows: false, info: "Ошибка. Не выбрана комната"}) :

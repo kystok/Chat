@@ -15,7 +15,6 @@ function reg() {
 function _reg(firstName, lastName, login, pass, callback) {
     socket.emit('register', {login: login, password: pass, lastName: lastName, firstName: firstName},
         function (data) {
-        console.log(data);
         callback(data);
     });
 }

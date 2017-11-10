@@ -8,10 +8,13 @@ describe('Chat core testing', () => {
         return SHA512(username + SHA512(CONFIG.secret));
     }
 
-
     describe('Friend list', () => {
-        let USER1 = 'test',
-            USER2 = 'test2';
+        const USER1 = 'test',
+            USER2 = 'test2',
+            data = {
+                sendFrom: USER1 + "." + hand(USER1),
+                friend: USER2
+            };
         before((done) => {
             DB.register(USER1, USER1, USER1, USER1)
                 .then(() => {
@@ -21,9 +24,7 @@ describe('Chat core testing', () => {
             })
         });
         after((done) => {
-            DB.query('DELETE FROM `friendList`' +
-                ' WHERE `user` = (select `id` from `users` where `login` = ?) ' +
-                'OR `user` = (select `id` from `users` where `login` = ?);', [USER1, USER2])
+            DB.deleteFriend(USER1, USER2)
                 .then(() => {
                     return DB.deleteUser(USER2);
                 }).then(() => {
@@ -32,19 +33,12 @@ describe('Chat core testing', () => {
                 done()
             }).catch((e) => {
                 done(e)
-            }).catch((e) => {
-                done(e)
-            }).catch((e) => {
-                done(e)
             })
 
         });
 
         it('Добавляем друга', (done) => {
-            const data = {
-                sendFrom: USER1 + "." + hand(USER1),
-                friend: USER2
-            };
+
             CHAT.addFriends(data)
                 .then(result => {
                     assert.equal(result.result, true);
@@ -55,7 +49,125 @@ describe('Chat core testing', () => {
                     done(err)
                 })
         });
+        it('Добавление уже существующего друга', (done) => {
+            CHAT.addFriends(data)
+                .then(result => {
+                    assert.equal(result.result, false);
+                    console.log('Пользователь уже в друзьях');
+                    done();
+                }).catch((err) => {
+                done(err)
+            })
+        });
+        it('Добавление самого себя в друзья', (done) => {
+            let data = {
+                sendFrom: USER1 + "." + hand(USER1),
+                friend: USER1
+            };
+            CHAT.addFriends(data)
+                .then(result => {
+                    assert.equal(result.result, false);
+                    console.log('Себя нельзя добавить в друзья');
+                    done();
+                }).catch((err) => {
+                done(err)
+            })
+        });
+        it('Отправитель отсутсвует', (done) => {
+            let sendFrom,
+                data = {
+                    sendFrom,
+                    friend: USER1
+                };
+            CHAT.addFriends(data)
+                .then(result => {
+                    assert.equal(result.result, false);
+                    console.log(result.info);
+                    done();
+                }).catch((err) => {
+                done(err)
+            })
+        });
+        it('Друг отсутсвует', (done) => {
 
+            let friend,
+                data = {
+                    sendFrom: USER1 + "." + hand(USER1),
+                    friend
+                };
+            CHAT.addFriends(data)
+                .then(result => {
+                    assert.equal(result.result, false);
+                    console.log(result.info);
+                    done();
+                }).catch((err) => {
+                done(err)
+            })
+        });
+        it('Вывод списка друзей', (done) => {
+            let sendFrom = USER1 + "." + hand(USER1);
+            CHAT.showFriendList(sendFrom)
+                .then(result => {
+                    assert.notEqual(result, false);
+                    done();
+                }).catch((err) => {
+                done(err)
+            })
+        });
+        it('Обработка входных данных на вывод списка', (done) => {
+            let sendFrom = "USER231." + hand(USER1);
+            CHAT.showFriendList(sendFrom)
+                .then(result => {
+                    assert.equal(result.result, false);
+                    console.log(result.info);
+                    done();
+                }).catch((err) => {
+                done(err)
+            })
+        });
+        it('Удаление из друзей', (done) => {
+            let data = {
+                sendFrom: USER1 + "." + hand(USER1),
+                friend: USER2
+            };
+            CHAT.deleteFriend(data)
+                .then(result => {
+                    assert.equal(result.result, true);
+                    console.log("Пользователь удален из friend list`а");
+                    done();
+                }).catch((err) => {
+                done(err)
+            })
+        })
+        it('Обработка входных данных на удаление(подпись)', (done) => {
+            let data = {
+                sendFrom: USER2 + "." + hand(USER1),
+                friend: USER2
+            };
+            CHAT.deleteFriend(data)
+                .then(result => {
+                    assert.equal(result.result, false);
+                    console.log(result.info);
+                    done();
+                }).catch((err) => {
+                done(err)
+            })
+        })
+        it('Обработка входных данных на удаление(пустое значение)', (done) => {
+
+            let friend, data = {
+                sendFrom: USER1 + "." + hand(USER1),
+                friend
+            };
+            CHAT.deleteFriend(data)
+                .then(result => {
+                    assert.equal(result.result, false);
+                    console.log(result.info);
+                    done();
+                }).catch((err) => {
+                done(err)
+            })
+        })
     });
 
     describe('Нормализация текста', () => {
@@ -133,7 +245,6 @@ describe('Chat core testing', () => {
             console.log('-------Тест проверки подписи-------');
             done();
         });
-
 
         const text1 = "usertestblabla",
             result1 = hand(text1);
@@ -328,6 +439,23 @@ describe('Chat core testing', () => {
                         lastName,
                         login,
                         password
+                    };
+                try {
+                    assert.equal(CHAT.isReadyForReg(data), false);
+                    console.log("Входной текст: '" + JSON.stringify(data) + "'");
+                    console.log("Результат: ", false, "");
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            });
+            it('Данные длинные', (done) => {
+                let firstName, lastName, login, password,
+                    data = {
+                        firstName: "111111111111111111111",
+                        lastName: "111111111111111111111",
+                        login: "1111111111111111111111",
+                        password: "11111111111111111111111"
                     };
                 try {
                     assert.equal(CHAT.isReadyForReg(data), false);

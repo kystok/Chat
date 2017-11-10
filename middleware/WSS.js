@@ -6,7 +6,6 @@ module.exports = function (httpServer, SSLserver) {
     let io = require('socket.io').listen(httpServer)/*.listen(SSLserver)*/;
 
     io.on('connection', function (socket) {
-
         socket.on('login', function (data, callback) {
             CHAT.login(data, function (confirm) {
                 if (!confirm.result) {
@@ -26,7 +25,8 @@ module.exports = function (httpServer, SSLserver) {
                 if (confirm.result) {
                     LOGIN.f(confirm.result, confirm.login);
                     REG.f(confirm.result, confirm.login);
-                };
+                }
+                ;
             });
         });
 
@@ -49,8 +49,8 @@ module.exports = function (httpServer, SSLserver) {
             });
         });
 
-        socket.on('users', function (username) { //загрузка всех юзеров, в дальнейшем надо отключить
-            CHAT.getUsers(username, function (result) {
+        socket.on('showFriends', function (username) { //загрузка всех юзеров, в дальнейшем надо отключить
+            CHAT.showFriendList(username, function (result) {
                 socket.emit('users', {rows: result});
             });
         });
@@ -69,17 +69,18 @@ module.exports = function (httpServer, SSLserver) {
 
         socket.on('changeRoom', function (data, callback) {
             CHAT.changeRoom(data, (result) => {
-            if (result.result) socket.join(data.room);
+                if (result.result) socket.join(data.room);
                 callback(result);
             })
         });
 
         socket.on('loadRoom', function (login, callback) {
             CHAT.loadRoom(login, (result) => {
-                if (result.result)  socket.emit('loadRoom', result[0]);
+                if (result.result) socket.emit('loadRoom', result[0]);
                 callback(result);
             });
         });
     });
-}
+
+};
 
